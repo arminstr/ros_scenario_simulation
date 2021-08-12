@@ -1,0 +1,8 @@
+<launch>
+  <arg name="pathToCommonRoad"/>
+  
+  
+  <param name="pathToCommonRoad" value="$(arg pathToCommonRoad)"/>
+  <!-- topic interface -->
+  <node pkg="sim_start" type="sim_start_node" name="start" output="screen"/>
+</launch>

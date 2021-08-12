@@ -1,0 +1,6 @@
+<launch>
+    <arg name="pathToCommonRoad"/>
+    <node pkg="commonroad_objects" type="commonroad_objects_node" name="sim_objects" output="screen">
+        <param name="pathToCommonRoad" 				value="$(arg pathToCommonRoad)" />
+    </node>
+</launch>

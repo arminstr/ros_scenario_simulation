@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="commonroad_goal" type="commonroad_goal_node" name="sim_goal" output="screen" required="true" />
+</launch>

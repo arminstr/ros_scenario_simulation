@@ -1,0 +1,8 @@
+
+<launch>
+  <arg name="pathToCommonRoad" default="/media/psf/Home/CloudStation/06_hochschule/02_MAPR/02_code/lanelet2opendrive/commonRoadScenarios/DEU_Muc-7_1_T-1.xml" />
+ 
+  <param name="pathToCommonRoad" value="$(arg pathToCommonRoad)"/>
+  <!-- topic interface -->
+  <node pkg="commonroad_evaluator" type="evaluator.py" name="evaluator" output="screen" required="true"/>
+</launch>
