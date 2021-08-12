@@ -3,6 +3,9 @@ Simulation Framework for ROS based path planning algorithms. Uses Scenarios and 
 
 ***This Framework is based on TUM Commonroad and Asam OpenScenario. Currently the licensing is not marked properly. Please notice this and do not copy or redistribute the code without marking it properly.***
 
+## Example Scenario
+![Image of a right turn scenario with other traffic participants](doc/scenario_sim_example.png "scenario sim example")
+
 ## Prerequisites
 
 ```bash
