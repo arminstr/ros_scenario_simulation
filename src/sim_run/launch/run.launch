@@ -1,6 +1,6 @@
 
 <launch>
-  <arg name="pathToScenario" default="$(env HOME)/scenario_sim_ws/src/simresources/scenario"/>
+  <arg name="pathToScenario" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/scenarios"/>
  
   <param name="pathToScenario" value="$(arg pathToScenario)"/>
   <!-- topic interface -->

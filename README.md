@@ -36,21 +36,27 @@ get depedencies -> execute in /scenario_sim_ws
 sudo rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 ```
 
+add ad-xolib as git submodule
+```bash
+git submodule add https://github.com/javedulu/ad-xolib.git src/open_scenario_helper/include/ad-xolib
+```
 
 ### Dependencies
 
 - ad-xolib
-Install and build the ad-xolib from source. Additionally, install and build "emscripten" from source. This is needed to build "ad-xolib" or edit the CMakeLists of "ad-xolib" na set emscripten support OFF. 
+Install and build the ad-xolib from source. Additionally, install and build "emscripten" from source. This is needed to build "ad-xolib" or edit the CMakeLists of "ad-xolib" and set emscripten support OFF. At Line 13.
 
 ### Build library ad-xolib
 
 In CMakeLists of ad-xolib set emscrption support to OFF
 
 ```bash
-cd open_scenario_helper/include/ad-xolib 
+cd src/open_scenario_helper/include/ad-xolib 
 git submodule update --init --recursive 
 mkdir build
 cd build
 cmake ..
 make
 ```
+
+### Build ROS Workspace with catkin build

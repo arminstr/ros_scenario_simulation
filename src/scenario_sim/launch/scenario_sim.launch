@@ -1,7 +1,6 @@
 <launch>
     <arg name="pathToScenario"/>
-    <arg name="pathToOpenDrive" default="$(env HOME)/scenario_sim_ws/src/simresources/map/driving-academy-maisach.xodr"/>
-    <!-- <arg name="pathToOpenDrive" default="$(env HOME)/scenario_sim_ws/src/simresources/map/campus-hsa.xodr"/> -->
+    <arg name="pathToOpenDrive" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/map/campus-hsa.xodr"/>
     
     <param name="pathToScenario" value="$(arg pathToScenario)"/>
     <param name="pathToOpenDrive" value="$(arg pathToOpenDrive)"/>
