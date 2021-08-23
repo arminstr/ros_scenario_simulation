@@ -34,7 +34,7 @@ int main( int argc, char** argv )
     
     // get parameters from launchfile
     std::string pathCR;
-    nh.getParam("/pathToCommonRoad", pathCR);
+    nh.getParam("/pathToScenario", pathCR);
 
     std::cout << pathCR << std::endl;
 
@@ -59,8 +59,7 @@ int main( int argc, char** argv )
                 break;
 
             case 20:
-                // pathToCommonRoad:=" + pathCR + "/commonRoadScenarios/" + fileCR + " pathToOpenDrive:=" + pathCR + "/commonRoadScenarios/" + fileXODR + " 
-                str_cmd = "roslaunch commonroad_sim commonroad_sim.launch pathToCommonRoad:=" + pathCR +  " &";  
+                str_cmd = "roslaunch scenario_sim scenario_sim.launch pathToScenario:=" + pathCR +  " &";  
                 // Convert string to const char * as system requires 
                 command = str_cmd.c_str(); 
                 ROS_INFO("*** Starting Simulation ***");
@@ -69,9 +68,9 @@ int main( int argc, char** argv )
                 break;
             
             default:
-                if( behaviorState == 13 && currentVelocityX < 0.1)
+                if( behaviorState == 12)
                 {
-                    ROS_INFO("*** End State detected ***");
+                    ROS_INFO("*** Stop State detected ***");
                     system("rosnode kill sim");
                     system("rosnode kill rviz");
                     ros::shutdown();

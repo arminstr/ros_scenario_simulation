@@ -1,8 +1,8 @@
 
 <launch>
-  <arg name="pathToCommonRoad" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/scenarios"/>
+  <arg name="pathToScenario" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/scenarios"/>
  
-  <param name="pathToCommonRoad" value="$(arg pathToCommonRoad)"/>
+  <param name="pathToScenario" value="$(arg pathToScenario)"/>
   <!-- topic interface -->
   <node pkg="sim_run" type="sim_run.py" name="sim_run" output="screen"/>
 </launch>
