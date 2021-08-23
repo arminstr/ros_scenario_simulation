@@ -69,9 +69,9 @@ int main( int argc, char** argv )
                 break;
             
             default:
-                if( behaviorState == 12)
+                if( behaviorState == 13 && currentVelocityX < 0.1)
                 {
-                    ROS_INFO("*** Stop State detected ***");
+                    ROS_INFO("*** End State detected ***");
                     system("rosnode kill sim");
                     system("rosnode kill rviz");
                     ros::shutdown();

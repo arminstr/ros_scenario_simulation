@@ -1,25 +1,13 @@
 #!/usr/bin/env python3
 # license removed for brevity
 import rospy
-import math
-import numpy as np
 import os
-import pathlib
-import matplotlib.pyplot as plt
 from std_msgs.msg import Int32
-from geometry_msgs.msg import PoseStamped, TwistStamped
-from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import TwistStamped
 from autoware_msgs.msg import Waypoint
-from commonroad.geometry.shape import Rectangle
-from commonroad.scenario.obstacle import DynamicObstacle, ObstacleType
-from commonroad.scenario.trajectory import Trajectory,State
-from commonroad.prediction.prediction import TrajectoryPrediction
-from commonroad.visualization.draw_dispatch_cr import draw_object
-from vehiclemodels import parameters_vehicle3
 
 from commonroad.common.file_reader import CommonRoadFileReader
 from commonroad.common.solution import CommonRoadSolutionWriter, Solution, PlanningProblemSolution, VehicleModel, VehicleType, CostFunction
-
 
 # generate state list of the ego vehicle's trajectory
 state_list = []
@@ -34,17 +22,22 @@ currentYaw = 0.0
 bSimulationFinished = True
 simWaitTimer = 0
 simWaitLimit = 20
+currentVelocityX = 0.0
 
 def behaviorCallback(behavior):
     global currentBehavior
     global bSimulationFinished
     global simWaitTimer
     currentBehavior = behavior.wpstate.event_state
-    if 12 == currentBehavior:
+    if 13 == currentBehavior and currentVelocityX < 0.01:
         bSimulationFinished = True
         simWaitTimer = 0
         rospy.loginfo("***************** End Detected in Sim Master ********************")
         rospy.loginfo("event state: %d", currentBehavior)
+
+def velocityCallback(velocity):
+    global currentVelocityX
+    currentVelocityX = velocity.twist.linear.x
 
 def timeCallback(timeStep):
     global currentTimeStep
@@ -59,6 +52,7 @@ def sim_run():
     rospy.init_node('sim_run', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     rospy.Subscriber("/op_current_behavior", Waypoint, behaviorCallback)
+    rospy.Subscriber("/current_velocity", TwistStamped, velocityCallback)
     rospy.Subscriber("/sim_timestep", Int32, timeCallback)
 
     file_path = rospy.get_param("/pathToCommonRoad")
