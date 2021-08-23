@@ -177,8 +177,6 @@ void modelStep(commonroad::CommonRoadData& cR, int timeStep)
     current_pose.pose.orientation.y = q[1];
     current_pose.pose.orientation.z = q[2];
     current_pose.pose.orientation.w = q[3];
-
-    std::cout << "this is just a test" << " accel: " << current_cmd.accel_cmd.accel << std::endl;
   }
 }
 
