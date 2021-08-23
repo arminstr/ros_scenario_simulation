@@ -1,0 +1,6 @@
+<launch>
+    <arg name="pathToScenario"/>
+    <node pkg="scenario_objects" type="scenario_objects_node" name="sim_objects" output="screen">
+        <param name="pathToScenario" 				value="$(arg pathToScenario)" />
+    </node>
+</launch>

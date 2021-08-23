@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>sim_run</name>
+  <name>scenario_evaluator</name>
   <version>0.0.0</version>
   <description>The commonroad package</description>
 
@@ -52,7 +52,6 @@
   <build_depend>rospy</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>visualization_msgs</build_depend>
   <build_export_depend>rospy</build_export_depend>
   <exec_depend>rospy</exec_depend>
 

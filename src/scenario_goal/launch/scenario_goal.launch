@@ -1,0 +1,5 @@
+<launch>
+    <!-- <arg name="pathToOpenDrive" default=""/> -->
+
+    <node pkg="scenario_goal" type="scenario_goal_node" name="sim_goal" output="screen" required="true" />
+</launch>
