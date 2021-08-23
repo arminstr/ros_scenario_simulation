@@ -1,0 +1,25 @@
+<launch>
+    <arg name="pathToScenario"/>
+    <arg name="pathToOpenDrive" default="$(env HOME)/scenario_sim_ws/src/simresources/map/driving-academy-maisach.xodr"/>
+    <!-- <arg name="pathToOpenDrive" default="$(env HOME)/scenario_sim_ws/src/simresources/map/campus-hsa.xodr"/> -->
+    
+    <param name="pathToScenario" value="$(arg pathToScenario)"/>
+    <param name="pathToOpenDrive" value="$(arg pathToOpenDrive)"/>
+    
+    <!-- topic interface -->
+    <node pkg="scenario_sim" type="scenario_sim_node" name="sim_core" output="screen" required="true"/>
+
+    <include file="$(find scenario_objects)/launch/scenario_objects.launch">
+        <arg name="pathToScenario" value="$(arg pathToScenario)"/>
+    </include>
+
+    <include file="$(find scenario_goal)/launch/scenario_goal.launch"/>
+
+    <node pkg="tf_broadcaster" type="tf_broadcaster_node" name="tf_broadcaster" /> 
+
+
+    <include file="$(find scenario_sim)/launch/ci_driving.launch">
+        <arg name="opendriveFilePath" value="$(arg pathToOpenDrive)"/>
+    </include>
+
+</launch>

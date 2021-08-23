@@ -1,0 +1,3 @@
+[submodule "src/open_scenario_helper/include/ad-xolib"]
+	path = src/open_scenario_helper/include/ad-xolib
+	url = https://github.com/javedulu/ad-xolib.git

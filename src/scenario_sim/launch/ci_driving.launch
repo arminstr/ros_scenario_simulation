@@ -1,0 +1,33 @@
+<launch>
+  <arg name="opendriveFilePath" default=""/>
+
+  <!-- Object Tracking -->
+  <include file="$(find scenario_objects)/launch/kf_tracker.launch">
+  </include>
+  
+  <!-- Mission Planning -->
+  <arg name="enableStopSignBehavior" 		default="true" />	
+  <include file="$(find scenario_sim)/launch/mission_planning.launch">
+    <arg name="maxVelocity" 				default="6" /> 
+  	<arg name="enableSwerving" 				default="true"  />
+    <arg name="enableStopSignBehavior" 		default="$(arg enableStopSignBehavior)" />
+    <arg name="openDriveMap" 					value="$(arg opendriveFilePath)" />
+  </include>
+
+  <!-- Motion Planning -->
+  <include file="$(find scenario_sim)/launch/motion_planning.launch">
+    <arg name="steerAngleGainKP" 			default="0.7"/>
+    <arg name="steerAngleGainKI" 			default="0.01"/>
+
+    <arg name="accelGainKP" 				default="200"/>
+    <arg name="accelGainKI" 				default="8"/>
+    <arg name="accelGainKD" 				default="0.0"/>
+	
+    <arg name="brakeGainKP" 				default="5"/>
+    <arg name="brakeGainKI" 				default="2.0"/>
+    <arg name="brakeGainKD" 				default="0.0"/> 
+  </include>
+
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find scenario_sim)/config/op_viz.rviz" />
+
+</launch>
