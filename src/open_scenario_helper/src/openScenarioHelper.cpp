@@ -73,7 +73,6 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                 // Heading
                 cr.planningProblem.goalState.position.orientation.exact = story.m_Storys[i]->m_Acts[j]->m_ManeuverGroups[0]->m_Maneuvers[0]->m_Events[0]->m_Actions[0]->m_Action->m_PrivateAction->m_PrivateAction->m_RoutingAction->m_RoutingAction->m_AcquirePositionAction->m_Position->m_Position->m_WorldPosition->h.m_double;
                 break;
-
             }
         }
     }
@@ -105,13 +104,75 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                     }
                 }
 
-                // now get the objects trajectory
+                temp_obstacle.role = commonroad::ObstacleRole::STATIC;
 
+                // // now get the objects trajectory
+                std::vector<std::shared_ptr<Vertex>> vertices;
+                for (int l = 0; l < story.m_Storys.size(); l++)
+                {
+                    for (int m = 0; m < story.m_Storys[l]->m_Acts.size(); m++)
+                    {
+                        for(int n = 0; n < obstacleRefs.size(); n++)
+                        {
+                            if (story.m_Storys[l]->m_Acts[m]->m_ManeuverGroups[0]->m_Actors->m_EntityRefs[0]->entityRef.m_string == obstacleRefs[n])
+                            {
+                                vertices = story.m_Storys[l]->m_Acts[m]->m_ManeuverGroups[0]->m_Maneuvers[0]->m_Events[0]->m_Actions[0]->m_Action->m_PrivateAction->m_PrivateAction->m_RoutingAction->m_RoutingAction->m_FollowTrajectoryAction->m_Trajectory->m_Shape->m_Shape->m_Polyline->m_Vertexs;
+                                if(vertices.size() > 0)
+                                {
+                                    temp_obstacle.role = commonroad::ObstacleRole::DYNAMIC;
+                                    
+                                    // first calculate trajectory length
+                                    double trajectoryLength = 0.0;
+                                    for (int o = 0; o < vertices.size()-1; o ++)
+                                    {
+                                        double segmentLength = std::sqrt(
+                                            std::pow(vertices[o+1]->m_Position->m_Position->m_WorldPosition->x.m_double - 
+                                            vertices[o]->m_Position->m_Position->m_WorldPosition->x.m_double, 2.0) + 
+                                            std::pow(vertices[o+1]->m_Position->m_Position->m_WorldPosition->y.m_double - 
+                                            vertices[o]->m_Position->m_Position->m_WorldPosition->y.m_double, 2.0));
+                                        trajectoryLength += segmentLength;
+                                    }
+
+                                    // std::cout << ">>>> TRAJECTORY LENGTH: " << trajectoryLength << std::endl;
+
+                                    // then read obstacle speed
+                                    double speed = 0.0; // m/s
+                                    for (int p = 0; p < story.m_Init->m_Actions->m_Privates.size(); p++)
+                                    {
+                                        if (story.m_Init->m_Actions->m_Privates[p]->entityRef.m_string == obstacleRefs[n])
+                                        {
+                                            speed = story.m_Init->m_Actions->m_Privates[p]->m_PrivateActions[1]->m_PrivateAction->m_LongitudinalAction->m_LongitudinalAction->m_SpeedAction->m_SpeedActionTarget->m_SpeedActionTarget->m_AbsoluteTargetSpeed->value.m_double;
+                                        }
+                                    }
+
+                                    // calculate the step size at 10 Hz
+                                    double stepSize = speed / 10;
+                                    double numberOfSteps = trajectoryLength / stepSize;
+                                    double numberOfInterpolationStepsBetweenVertices = numberOfSteps / vertices.size();
+
+                                    for (int q = 0; q < vertices.size()-1; q ++)
+                                    {
+                                        double dx = vertices[q+1]->m_Position->m_Position->m_WorldPosition->x.m_double - vertices[q]->m_Position->m_Position->m_WorldPosition->x.m_double / numberOfInterpolationStepsBetweenVertices;
+                                        double dy = vertices[q+1]->m_Position->m_Position->m_WorldPosition->y.m_double - vertices[q]->m_Position->m_Position->m_WorldPosition->y.m_double / numberOfInterpolationStepsBetweenVertices;
+
+                                        for(int r = 0; r < numberOfInterpolationStepsBetweenVertices; r ++)
+                                        {
+                                            commonroad::ObstacleState state;
+                                            state.position.point.x = vertices[q]->m_Position->m_Position->m_WorldPosition->x.m_double + r * dx;
+                                            state.position.point.y = vertices[q]->m_Position->m_Position->m_WorldPosition->y.m_double + r * dy;
+                                            state.orientation.exact = vertices[q]->m_Position->m_Position->m_WorldPosition->h.m_double;
+                                            temp_obstacle.trajectory.push_back(state);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 cr.obstacles.push_back(temp_obstacle); 
             }
         }
     }
-
     return bSuccess;
 }
 
