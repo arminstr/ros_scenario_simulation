@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenSCENARIO.xsd">
-    <FileHeader author="Armin Straller" date="2021-08-24T08:34:0.0" description="avoid obstacle and drive on opposite straight" revMajor="1" revMinor="0"/>
+    <FileHeader author="Armin Straller" date="2021-08-24T08:34:00.00" description="avoid obstacle and drive on opposite straight" revMajor="1" revMinor="0"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
     </ParameterDeclarations>
