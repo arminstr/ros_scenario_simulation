@@ -147,13 +147,14 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                                 {
                                     double dx = (vertices[q+1]->m_Position->m_Position->m_WorldPosition->x.m_double - vertices[q]->m_Position->m_Position->m_WorldPosition->x.m_double) / numberOfInterpolationStepsBetweenVertices;
                                     double dy = (vertices[q+1]->m_Position->m_Position->m_WorldPosition->y.m_double - vertices[q]->m_Position->m_Position->m_WorldPosition->y.m_double) / numberOfInterpolationStepsBetweenVertices;
+                                    double dh = (vertices[q+1]->m_Position->m_Position->m_WorldPosition->h.m_double - vertices[q]->m_Position->m_Position->m_WorldPosition->h.m_double) / numberOfInterpolationStepsBetweenVertices;
                                     
                                     for(int r = 0; r < numberOfInterpolationStepsBetweenVertices; r ++)
                                     {
                                         commonroad::ObstacleState state;
                                         state.position.point.x = vertices[q]->m_Position->m_Position->m_WorldPosition->x.m_double + r * dx;
                                         state.position.point.y = vertices[q]->m_Position->m_Position->m_WorldPosition->y.m_double + r * dy;
-                                        state.orientation.exact = vertices[q]->m_Position->m_Position->m_WorldPosition->h.m_double;
+                                        state.orientation.exact = vertices[q]->m_Position->m_Position->m_WorldPosition->h.m_double + r * dh;
                                         temp_obstacle.trajectory.push_back(state);
                                     }
                                 }
