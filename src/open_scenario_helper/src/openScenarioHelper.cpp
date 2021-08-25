@@ -32,7 +32,8 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     // It should be possible to use one of the parameter fields of xosc
 
     // Retreive Ego Vehicle Scenario Object Name and Obstacle Names from OpenSCENARIO File
-    for (int i = 0; i < entities->m_ScenarioObjects.size(); i++){
+    for (int i = 0; i < entities->m_ScenarioObjects.size(); i++)
+    {
         if(entities->m_ScenarioObjects[i]->m_EntityObject->m_Vehicle->name.m_string == "ego")
         {
             egoRef = entities->m_ScenarioObjects[i]->name.m_string;
@@ -59,7 +60,6 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     }
 
     //Parse Ego Goal Position
-    // TODO: Fix Open Scenario compatibility issues
     for (int i = 0; i < story.m_Storys.size(); i++)
     {
         for (int j = 0; j < story.m_Storys[i]->m_Acts.size(); j++)
@@ -79,8 +79,6 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     }
 
     cr.obstacles.clear();
-    int object_cnt = 0;
-
     // Parse Obstacles
     for (int i = 0; i < story.m_Init->m_Actions->m_Privates.size(); i++)
     {
@@ -88,9 +86,8 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
         {
             if (story.m_Init->m_Actions->m_Privates[i]->entityRef.m_string == obstacleRefs[j])
             {
-                object_cnt++;
                 commonroad::ObstacleInformation temp_obstacle;
-                std::cout << "Found Obstacle " << object_cnt << std::endl;
+                std::cout << "Found Obstacle " << obstacleRefs[j] << std::endl;
                 bSuccess = true;
                 // Position
                 temp_obstacle.initialState.position.point.x = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->x.m_double;
@@ -99,8 +96,16 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                 temp_obstacle.initialState.orientation.exact = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->h.m_double;
                 
                 // Shape
-                temp_obstacle.shape.width = 1.5;
-                temp_obstacle.shape.length = 2.5;      
+                for (int k = 0; k < entities->m_ScenarioObjects.size(); k++){
+                    if(entities->m_ScenarioObjects[k]->name.m_string == obstacleRefs[j])
+                    {
+                        temp_obstacle.shape.width = entities->m_ScenarioObjects[k]->m_EntityObject->m_Vehicle->m_BoundingBox->m_Dimensions->width.m_double;
+                        temp_obstacle.shape.length = entities->m_ScenarioObjects[k]->m_EntityObject->m_Vehicle->m_BoundingBox->m_Dimensions->length.m_double;   
+                        break;
+                    }
+                }
+
+                // now get the objects trajectory
 
                 cr.obstacles.push_back(temp_obstacle); 
             }
