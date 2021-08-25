@@ -1,6 +1,6 @@
 # ROS Scenario Simulation
 
-This project is designed to test the openplanner algorithms, based on "common road" [ref] and "openScenario"[ref] files.
+This project is designed to test the openplanner algorithms, based on "common road" [1] and "openScenario"[2] files.
 
 ## Scenarios
 Currently the folowing scenarios are provided:
@@ -60,3 +60,8 @@ make
 ```
 
 ### Build ROS Workspace with catkin build
+
+### References
+[1]: Commonroad Scenario Format Definition https://commonroad.in.tum.de
+
+[2]: OpenSCENARIO  Format Definition https://www.asam.net/standards/detail/openscenario/
