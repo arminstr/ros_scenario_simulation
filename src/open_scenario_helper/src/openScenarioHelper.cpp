@@ -31,7 +31,7 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     //TODO: Add some parameter that can be used to set the ego and obstacle vehicle class tags. 
     // It should be possible to use one of the parameter fields of xosc
 
-    // Retreive Ego Vehicle Scenario Object Name from OpenSCENARIO File
+    // Retreive Ego Vehicle Scenario Object Name and Obstacle Names from OpenSCENARIO File
     for (int i = 0; i < entities->m_ScenarioObjects.size(); i++){
         if(entities->m_ScenarioObjects[i]->m_EntityObject->m_Vehicle->name.m_string == "ego")
         {
@@ -43,6 +43,7 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
         }
     }
 
+    // Retreive Planning Problem start position
     for (int i = 0; i < story.m_Init->m_Actions->m_Privates.size(); i++)
     {
         if (story.m_Init->m_Actions->m_Privates[i]->entityRef.m_string == egoRef)
@@ -58,6 +59,7 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     }
 
     //Parse Ego Goal Position
+    // TODO: Fix Open Scenario compatibility issues
     for (int i = 0; i < story.m_Storys.size(); i++)
     {
         for (int j = 0; j < story.m_Storys[i]->m_Acts.size(); j++)
