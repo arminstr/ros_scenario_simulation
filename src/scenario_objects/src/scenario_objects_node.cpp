@@ -42,7 +42,7 @@ int main( int argc, char** argv )
   {
     bSuccess = openScenarioHelper::Load(pathToScenario, cr);
   }
-  else
+  else if (commonroad::checkFileTypeXML(pathToScenario))
   {
     bSuccess = commonroad::Load(pathToScenario, cr);
   }
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
   // checks if the file was loaded
   if(!bSuccess)
   {
-    ROS_FATAL("Unable to load CommonRoad Benchmark file!");
+    ROS_FATAL("Unable to load Scenario file!");
     exit(0);
   }
 
