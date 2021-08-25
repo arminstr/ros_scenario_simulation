@@ -80,21 +80,18 @@ def sim_run():
     file_path = rospy.get_param("/pathToScenario")
 
     fileList = []
-    for root, dirs, files in os.walk(file_path):
+    for _, _, files in os.walk(file_path):
         for file in files:
             if file.endswith('.xml') and not file.startswith('solution'):
-                    rospy.loginfo("%s", file)
-                    fileList.append(file)
+                fileList.append(file)
             if file.endswith('.xosc'):
-                    rospy.loginfo("%s", file)
-                    fileList.append(file)
+                fileList.append(file)
     
     while not rospy.is_shutdown():
         if bSimulationFinished:
             simWaitTimer += 1
         if bSimulationFinished and simWaitTimer < simWaitLimit:
             topicname = os.popen("rosnode list | grep sim_core").readlines()
-            print(topicname)
             if topicname == ['/sim_core\n']:
                 print("killing simulation")
                 os.system("rosnode kill sim_core")
