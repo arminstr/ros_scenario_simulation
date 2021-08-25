@@ -89,6 +89,16 @@
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                          <SpeedAction>
+                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
+                            <SpeedActionTarget>
+                              <AbsoluteTargetSpeed value="10.0"/>
+                            </SpeedActionTarget>
+                          </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
                 </Private>
             </Actions>
         </Init>
@@ -131,7 +141,7 @@
             <Act name="ObstacleTrajectoryAct">
                 <ManeuverGroup maximumExecutionCount="1" name="ObstacleTrajectoryGroup">
                     <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Obstacle 1"/>
+                        <EntityRef entityRef="Obstacle 2"/>
                     </Actors>
                     <Maneuver name="TrajectoryManeuver">
                         <ParameterDeclarations/>
@@ -144,7 +154,7 @@
                                                 <None />
                                             </TimeReference>
                                             <TrajectoryFollowingMode followingMode="position"/>
-                                            <Trajectory closed="false" name="obstacle 1 trajectory">
+                                            <Trajectory closed="false" name="obstacle 2 trajectory">
                                                 <Shape>
                                                     <Polyline>
                                                         <Vertex>
