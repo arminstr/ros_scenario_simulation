@@ -64,13 +64,13 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     {
         for (int j = 0; j < story.m_Storys[i]->m_Acts.size(); j++)
         {
-            if( story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs[0]->entityRef.m_string == egoRef)
+            if( story.m_Storys[i]->m_Acts[j]->m_ManeuverGroups[0]->m_Actors->m_EntityRefs[0]->entityRef.m_string == egoRef)
             {
                 std::cout << "Found Ego Goal Point" << std::endl;
                 bSuccess = true;
                 // Position
-                cr.planningProblem.goalState.position.pos.point.x = story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->x.m_double;
-                cr.planningProblem.goalState.position.pos.point.y = story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->y.m_double;
+                cr.planningProblem.goalState.position.pos.point.x = story.m_Storys[i]->m_Acts[j]->m_ManeuverGroups[0]->m_Maneuvers[0]->m_Events[0]->m_Actions[0]->m_Action->m_PrivateAction->m_PrivateAction->m_RoutingAction->m_RoutingAction->m_AcquirePositionAction->m_Position->m_Position->m_WorldPosition->x.m_double;
+                cr.planningProblem.goalState.position.pos.point.y = story.m_Storys[i]->m_Acts[j]->m_ManeuverGroups[0]->m_Maneuvers[0]->m_Events[0]->m_Actions[0]->m_Action->m_PrivateAction->m_PrivateAction->m_RoutingAction->m_RoutingAction->m_AcquirePositionAction->m_Position->m_Position->m_WorldPosition->y.m_double;
                 // Heading
                 cr.planningProblem.goalState.position.orientation.exact = story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->h.m_double;
                 break;
