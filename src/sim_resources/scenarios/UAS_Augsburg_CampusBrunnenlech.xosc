@@ -80,7 +80,6 @@
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
-
                 <Private entityRef="Obstacle 2">
                     <PrivateAction>
                         <TeleportAction>
@@ -94,7 +93,7 @@
                           <SpeedAction>
                             <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
                             <SpeedActionTarget>
-                              <AbsoluteTargetSpeed value="10.0"/>
+                              <AbsoluteTargetSpeed value="2.0"/>
                             </SpeedActionTarget>
                           </SpeedAction>
                         </LongitudinalAction>
@@ -164,7 +163,12 @@
                                                         </Vertex>
                                                         <Vertex>
                                                             <Position>
-                                                                <WorldPosition x="-70.4486465454" y="234.48736572" h="0.7"/>
+                                                                <WorldPosition x="-107.4486465454" y="210.487365723"  h="3.84"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-139.4486465454" y="185.487365723"  h="3.84"/>
                                                             </Position>
                                                         </Vertex>
                                                     </Polyline>
