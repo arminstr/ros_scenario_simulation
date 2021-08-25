@@ -20,6 +20,9 @@
 geometry_msgs::PoseStamped getGoalPoseFromLaneletId(commonroad::CommonRoadData& cR);
 void getAutowareObjectsFromCommonRoad(autoware_msgs::DetectedObjectArray& objArray, commonroad::CommonRoadData& cR, int tC);
 geometry_msgs::Point32 rotate_point(float cx,float cy,float angle,geometry_msgs::Point32 p);
+autoware_msgs::DetectedObject get_object_from_state(const commonroad::ObstacleInformation* obstacle, commonroad::ObstacleState* state, int id);
+
+double noiseMargin = 0.1; // 0.1 Meters max
 
 int main( int argc, char** argv )
 {
@@ -78,87 +81,117 @@ int main( int argc, char** argv )
 void getAutowareObjectsFromCommonRoad(autoware_msgs::DetectedObjectArray& objArray, commonroad::CommonRoadData& cR, int tC)
 {
   bool bNoise = true;
-  double noiseMargin = 0.1; // 0.1 Meters max
-  double noiseX = 0;
-  double noiseY = 0; 
-  
-  int i = 0;
+  int id = 0;
   for(const commonroad::ObstacleInformation & obstacle : cR.obstacles)
   {
-    noiseX = (double)(std::rand() % 200 - 100)/100.0;
-    noiseY = (double)(std::rand() % 200 - 100)/100.0;
     commonroad::ObstacleState state;
     /* code for publishing autoware object */
     autoware_msgs::DetectedObject obj;
-    //if(obstacle.role == commonroad::ObstacleRole::DYNAMIC) {
-    // check if it's the first frame -> get initial state
-    state = obstacle.initialState;
-    obj.id = i++;
-    obj.score = 100;
-    obj.valid = true;
-    obj.pose_reliable = true;
-    obj.velocity_reliable = true;
-    obj.acceleration_reliable = false;
-    obj.space_frame = "map";
-
-    obj.pose.position.x = state.position.point.x + noiseMargin * noiseX;
-    obj.pose.position.y = state.position.point.y + noiseMargin * noiseY;
-    obj.pose.position.z = 0;
-
-    obj.acceleration.linear.x = 0;
-    obj.acceleration.linear.y = 0;
-    obj.acceleration.linear.z = 0;
-
-    obj.velocity.linear.x = 0;
-    obj.velocity.linear.y = 0;
-    obj.velocity.linear.z = 0;
-
-    tf2::Quaternion myQuaternion;
-    myQuaternion.setRPY( 0, 0, state.orientation.exact);  // Create this quaternion from roll/pitch/yaw (in radians)
-    obj.pose.orientation.x = myQuaternion.x();
-    obj.pose.orientation.y = myQuaternion.y();
-    obj.pose.orientation.z = myQuaternion.z();
-    obj.pose.orientation.w = myQuaternion.w();
     
-    obj.dimensions.x = obstacle.shape.length;
-    obj.dimensions.y = obstacle.shape.width;
-    obj.dimensions.z = 2;
-
-    obj.indicator_state = 0; // none
-    obj.behavior_state = 0; 
-
-    geometry_msgs::Point32 temp_point;
-    float yaw = state.orientation.exact;
-    obj.convex_hull.polygon.points.clear();
-    
-    // Hull boundingbox definition
-    temp_point.x = obj.pose.position.x+(obj.dimensions.x/2);
-    temp_point.y = obj.pose.position.y+(obj.dimensions.y/2);
-    temp_point.z = 2;
-    temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
-    obj.convex_hull.polygon.points.push_back(temp_point);
-    temp_point.x = obj.pose.position.x+(obj.dimensions.x/2);
-    temp_point.y = obj.pose.position.y+(-obj.dimensions.y/2);
-    temp_point.z = 2;
-    temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
-    obj.convex_hull.polygon.points.push_back(temp_point);
-    temp_point.x = obj.pose.position.x+(-obj.dimensions.x/2);
-    temp_point.y = obj.pose.position.y+(-obj.dimensions.y/2);
-    temp_point.z = 2;
-    temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
-    obj.convex_hull.polygon.points.push_back(temp_point);
-    temp_point.x = obj.pose.position.x+(-obj.dimensions.x/2);
-    temp_point.y = obj.pose.position.y+(obj.dimensions.y/2);
-    temp_point.z = 2;
-    temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
-    obj.convex_hull.polygon.points.push_back(temp_point);
-
-    obj.convex_hull.header.frame_id = "map";
-    
-    if (obj.pose.position.x >= 0.0001 || obj.pose.position.x <= -0.0001){
-        objArray.objects.push_back(obj);
+    if(obstacle.trajectory.size() > 0) 
+    {
+      // check if it's the first frame -> get initial state
+      if(tC <= 0)
+      {
+        state = obstacle.initialState;
+      }
+      if(tC > 0)
+      {
+        if(tC < obstacle.trajectory.size())
+        {
+          state = obstacle.trajectory[tC];
+        }
+        if(tC >= obstacle.trajectory.size())
+        {
+          state = obstacle.trajectory[obstacle.trajectory.size()-1];
+        }
+      }
+      obj = get_object_from_state(&obstacle, &state, id);      
+      if (obj.pose.position.x >= 0.0001 || obj.pose.position.x <= -0.0001){
+          objArray.objects.push_back(obj);
+      }
+    } 
+    if(obstacle.trajectory.size() == 0) 
+    {
+      state = obstacle.initialState;
+      obj = get_object_from_state(&obstacle, &state, id);
+      if (obj.pose.position.x >= 0.0001 || obj.pose.position.x <= -0.0001){
+          objArray.objects.push_back(obj);
+      }
     }
+
+    id++;
   }
+}
+
+autoware_msgs::DetectedObject get_object_from_state(const commonroad::ObstacleInformation* obstacle, commonroad::ObstacleState* state, int id)
+{
+  double noiseX = (double)(std::rand() % 200 - 100)/100.0;
+  double noiseY = (double)(std::rand() % 200 - 100)/100.0;
+  autoware_msgs::DetectedObject obj;
+  obj.id = id;
+  obj.score = 100;
+  obj.valid = true;
+  obj.pose_reliable = true;
+  obj.velocity_reliable = true;
+  obj.acceleration_reliable = false;
+  obj.space_frame = "map";
+
+  obj.pose.position.x = state->position.point.x + noiseMargin * noiseX;
+  obj.pose.position.y = state->position.point.y + noiseMargin * noiseY;
+  obj.pose.position.z = 0;
+
+  obj.acceleration.linear.x = 0;
+  obj.acceleration.linear.y = 0;
+  obj.acceleration.linear.z = 0;
+
+  obj.velocity.linear.x = 0;
+  obj.velocity.linear.y = 0;
+  obj.velocity.linear.z = 0;
+
+  tf2::Quaternion myQuaternion;
+  myQuaternion.setRPY( 0, 0, state->orientation.exact);  // Create this quaternion from roll/pitch/yaw (in radians)
+  obj.pose.orientation.x = myQuaternion.x();
+  obj.pose.orientation.y = myQuaternion.y();
+  obj.pose.orientation.z = myQuaternion.z();
+  obj.pose.orientation.w = myQuaternion.w();
+  
+  obj.dimensions.x = obstacle->shape.length;
+  obj.dimensions.y = obstacle->shape.width;
+  obj.dimensions.z = 2;
+
+  obj.indicator_state = 0; // none
+  obj.behavior_state = 0; 
+
+  geometry_msgs::Point32 temp_point;
+  float yaw = state->orientation.exact;
+  obj.convex_hull.polygon.points.clear();
+  
+  // Hull boundingbox definition
+  temp_point.x = obj.pose.position.x+(obj.dimensions.x/2);
+  temp_point.y = obj.pose.position.y+(obj.dimensions.y/2);
+  temp_point.z = 2;
+  temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
+  obj.convex_hull.polygon.points.push_back(temp_point);
+  temp_point.x = obj.pose.position.x+(obj.dimensions.x/2);
+  temp_point.y = obj.pose.position.y+(-obj.dimensions.y/2);
+  temp_point.z = 2;
+  temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
+  obj.convex_hull.polygon.points.push_back(temp_point);
+  temp_point.x = obj.pose.position.x+(-obj.dimensions.x/2);
+  temp_point.y = obj.pose.position.y+(-obj.dimensions.y/2);
+  temp_point.z = 2;
+  temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
+  obj.convex_hull.polygon.points.push_back(temp_point);
+  temp_point.x = obj.pose.position.x+(-obj.dimensions.x/2);
+  temp_point.y = obj.pose.position.y+(obj.dimensions.y/2);
+  temp_point.z = 2;
+  temp_point = rotate_point(obj.pose.position.x,obj.pose.position.y,yaw,temp_point);
+  obj.convex_hull.polygon.points.push_back(temp_point);
+
+  obj.convex_hull.header.frame_id = "map";
+
+  return obj;
 }
 
 geometry_msgs::Point32 rotate_point(float cx,float cy,float angle,geometry_msgs::Point32 p)

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenSCENARIO.xsd">
-    <FileHeader author="Armin Straller" date="2021-08-24T08:34:0.0" description="avoid obstacle and drive on opposite straight" revMajor="1" revMinor="0"/>
+    <FileHeader author="Armin Straller" date="2021-08-24T08:34:00.00" description="avoid obstacle and drive on opposite straight" revMajor="1" revMinor="0"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
     </ParameterDeclarations>
@@ -80,7 +80,6 @@
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
-
                 <Private entityRef="Obstacle 2">
                     <PrivateAction>
                         <TeleportAction>
@@ -91,12 +90,12 @@
                     </PrivateAction>
                     <PrivateAction>
                         <LongitudinalAction>
-                            <SpeedAction>
+                          <SpeedAction>
                             <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
                             <SpeedActionTarget>
-                                <AbsoluteTargetSpeed value="10.0"/>
+                              <AbsoluteTargetSpeed value="2.0"/>
                             </SpeedActionTarget>
-                            </SpeedAction>
+                          </SpeedAction>
                         </LongitudinalAction>
                     </PrivateAction>
                 </Private>
@@ -107,44 +106,90 @@
                 <ParameterDeclaration name="owner" parameterType="string" value="Target"/>
             </ParameterDeclarations>
             <Act name="EgoDrivingAct">
-                <StopTrigger>
+                <ManeuverGroup maximumExecutionCount="1" name="EgoDrivingManeuverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="DrivingManeuver">
+                        <ParameterDeclarations/>
+                        <Event name="DriveEvent" priority="overwrite">
+                            <Action name="DrivingAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <AcquirePositionAction>
+                                            <Position>
+                                                <WorldPosition x="-70.4486465454" y="234.48736572" h="0.7"/>
+                                            </Position>
+                                        </AcquirePositionAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
                     <ConditionGroup>
-                        <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-                            <ByEntityCondition>
-                                <TriggeringEntities triggeringEntitiesRule="any">
-                                   <EntityRef entityRef="Ego"/>
-                                </TriggeringEntities>
-                                <EntityCondition>
-                                    <ReachPositionCondition tolerance="5.0">
-                                       <Position>
-                                            <WorldPosition x="-70.4486465454" y="234.48736572" h="0.7" />
-                                       </Position>
-                                    </ReachPositionCondition>
-                                 </EntityCondition>
-                            </ByEntityCondition>
+                        <Condition delay="0.0" conditionEdge="rising" name="Simulation Time">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterThan" value="0.0"/>
+                            </ByValueCondition>
                         </Condition>
                     </ConditionGroup>
-                </StopTrigger>
+                </StartTrigger>
             </Act>
-            <Act name ="ObstacleDrivingAct">
-                <StopTrigger>
+            <Act name="ObstacleTrajectoryAct">
+                <ManeuverGroup maximumExecutionCount="1" name="ObstacleTrajectoryGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Obstacle 2"/>
+                    </Actors>
+                    <Maneuver name="TrajectoryManeuver">
+                        <ParameterDeclarations/>
+                        <Event name="DriveEvent" priority="overwrite">
+                            <Action name="TrajectoryAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <Trajectory closed="false" name="obstacle 2 trajectory">
+                                                <Shape>
+                                                    <Polyline>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-75.4486465454" y="235.48736572" h="3.84" />
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-107.4486465454" y="210.487365723"  h="3.84"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-139.4486465454" y="185.487365723"  h="3.84"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                    </Polyline>
+                                                </Shape>
+                                            </Trajectory>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
                     <ConditionGroup>
-                        <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-                            <ByEntityCondition>
-                                <TriggeringEntities triggeringEntitiesRule="any">
-                                   <EntityRef entityRef="Obstacle 2"/>
-                                </TriggeringEntities>
-                                <EntityCondition>
-                                    <ReachPositionCondition tolerance="5.0">
-                                       <Position>
-                                            <WorldPosition x="-162.017120361" y="162.847366333" h="5.24" />
-                                       </Position>
-                                    </ReachPositionCondition>
-                                 </EntityCondition>
-                            </ByEntityCondition>
+                        <Condition delay="0.0" conditionEdge="rising" name="Simulation Time">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterThan" value="0.0"/>
+                            </ByValueCondition>
                         </Condition>
                     </ConditionGroup>
-                </StopTrigger>
+                </StartTrigger>
             </Act>
         </Story>
         <StopTrigger>
