@@ -89,16 +89,6 @@
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
-                    <PrivateAction>
-                        <LongitudinalAction>
-                            <SpeedAction>
-                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
-                            <SpeedActionTarget>
-                                <AbsoluteTargetSpeed value="10.0"/>
-                            </SpeedActionTarget>
-                            </SpeedAction>
-                        </LongitudinalAction>
-                    </PrivateAction>
                 </Private>
             </Actions>
         </Init>
@@ -138,22 +128,39 @@
                     </ConditionGroup>
                 </StartTrigger>
             </Act>
-            <Act name="ObstacleDrivingAct">
-                <ManeuverGroup maximumExecutionCount="1" name="EgoDrivingManeuverGroup">
+            <Act name="ObstacleTrajectoryAct">
+                <ManeuverGroup maximumExecutionCount="1" name="ObstacleTrajectoryGroup">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Obstacle 1"/>
                     </Actors>
-                    <Maneuver name="DrivingManeuver">
+                    <Maneuver name="TrajectoryManeuver">
                         <ParameterDeclarations/>
                         <Event name="DriveEvent" priority="overwrite">
-                            <Action name="DrivingAction">
+                            <Action name="TrajectoryAction">
                                 <PrivateAction>
                                     <RoutingAction>
-                                        <AcquirePositionAction>
-                                            <Position>
-                                                <WorldPosition x="-70.4486465454" y="234.48736572" h="0.7"/>
-                                            </Position>
-                                        </AcquirePositionAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <Trajectory closed="false" name="obstacle 1 trajectory">
+                                                <Shape>
+                                                    <Polyline>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-75.4486465454" y="235.48736572" h="3.84" />
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-70.4486465454" y="234.48736572" h="0.7"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                    </Polyline>
+                                                </Shape>
+                                            </Trajectory>
+                                        </FollowTrajectoryAction>
                                     </RoutingAction>
                                 </PrivateAction>
                             </Action>
