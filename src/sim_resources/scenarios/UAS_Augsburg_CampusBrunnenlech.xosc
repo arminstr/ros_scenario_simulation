@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenSCENARIO.xsd">
+    <FileHeader author="Armin Straller" date="2021-08-24T08:34:0.0" description="avoid obstacle and drive on opposite straight" revMajor="1" revMinor="0"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../map/campus-hsa.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <Vehicle name="ego" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Obstacle 1">
+            <Vehicle name="obstacle" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Obstacle 2">
+            <Vehicle name="obstacle" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-162.017120361" y="162.847366333" h="2.1" />
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Obstacle 1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-100.4486465454" y="208.487365723"  h="0.7"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+
+                <Private entityRef="Obstacle 2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-75.4486465454" y="235.48736572" h="3.84" />
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
+                            <SpeedActionTarget>
+                                <AbsoluteTargetSpeed value="10.0"/>
+                            </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="DrivingStory">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="owner" parameterType="string" value="Target"/>
+            </ParameterDeclarations>
+            <Act name="EgoDrivingAct">
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                            <ByEntityCondition>
+                                <TriggeringEntities triggeringEntitiesRule="any">
+                                   <EntityRef entityRef="Ego"/>
+                                </TriggeringEntities>
+                                <EntityCondition>
+                                    <ReachPositionCondition tolerance="5.0">
+                                       <Position>
+                                            <WorldPosition x="-70.4486465454" y="234.48736572" h="0.7" />
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                            </ByEntityCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+            <Act name ="ObstacleDrivingAct">
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                            <ByEntityCondition>
+                                <TriggeringEntities triggeringEntitiesRule="any">
+                                   <EntityRef entityRef="Obstacle 2"/>
+                                </TriggeringEntities>
+                                <EntityCondition>
+                                    <ReachPositionCondition tolerance="5.0">
+                                       <Position>
+                                            <WorldPosition x="-162.017120361" y="162.847366333" h="5.24" />
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                            </ByEntityCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+              <Condition delay="0.0" conditionEdge="rising" name="Time limit">
+                <ByValueCondition>
+                  <SimulationTimeCondition rule="greaterThan" value="50.0"/>
+                </ByValueCondition>
+              </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
