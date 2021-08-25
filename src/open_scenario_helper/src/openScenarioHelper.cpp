@@ -17,41 +17,63 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     }
 
     ScenarioObject ego;
+    std::shared_ptr<Entities> entities;
     Storyboard story;
     int numberObjects = 0;
 
     story = *xoscScenario.m_OpenSCENARIO->m_OpenScenarioCategory->m_ScenarioDefinition->m_Storyboard;
+    entities = xoscScenario.m_OpenSCENARIO->m_OpenScenarioCategory->m_ScenarioDefinition->m_Entities;
 
-    // Parse Start Position
+    std::string egoRef;
+    std::vector<std::string> obstacleRefs;
+    obstacleRefs.clear();
 
-    for (int count = 0; count < story.m_Init->m_Actions->m_Privates.size(); count++)
-    {
-        if (story.m_Init->m_Actions->m_Privates[count]->entityRef.m_string == "Ego")
+    //TODO: Add some parameter that can be used to set the ego and obstacle vehicle class tags. 
+    // It should be possible to use one of the parameter fields of xosc
+
+    // Retreive Ego Vehicle Scenario Object Name from OpenSCENARIO File
+    for (int i = 0; i < entities->m_ScenarioObjects.size(); i++){
+        if(entities->m_ScenarioObjects[i]->m_EntityObject->m_Vehicle->name.m_string == "ego")
         {
-            std::cout << "Found Ego" << std::endl;
+            egoRef = entities->m_ScenarioObjects[i]->name.m_string;
+        }
+        if(entities->m_ScenarioObjects[i]->m_EntityObject->m_Vehicle->name.m_string == "obstacle")
+        {
+            obstacleRefs.push_back(entities->m_ScenarioObjects[i]->name.m_string);
+        }
+    }
+
+    for (int i = 0; i < story.m_Init->m_Actions->m_Privates.size(); i++)
+    {
+        if (story.m_Init->m_Actions->m_Privates[i]->entityRef.m_string == egoRef)
+        {
             bSuccess = true;
             // Position
-            cr.planningProblem.initialState.position.point.x = story.m_Init->m_Actions->m_Privates[count]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->x.m_double;
-            cr.planningProblem.initialState.position.point.y = story.m_Init->m_Actions->m_Privates[count]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->y.m_double;
+            cr.planningProblem.initialState.position.point.x = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->x.m_double;
+            cr.planningProblem.initialState.position.point.y = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->y.m_double;
             // Heading
-            cr.planningProblem.initialState.orientation.exact = story.m_Init->m_Actions->m_Privates[count]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->h.m_double;
+            cr.planningProblem.initialState.orientation.exact = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->h.m_double;
             break;
         }
     }
 
-    //Parse Goal Position
-    for (int count = 0; count < story.m_Storys.size() ; count++)
+    //Parse Ego Goal Position
+    for (int i = 0; i < story.m_Storys.size(); i++)
     {
-        if (story.m_Storys[count]->name.m_string == "drive-to-point")
+        for (int j = 0; j < story.m_Storys[i]->m_Acts.size(); j++)
         {
-            std::cout << "Found Goal Point" << std::endl;
-            bSuccess = true;
-            // Position
-            cr.planningProblem.goalState.position.pos.point.x = story.m_Storys[count]->m_Acts[0]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->x.m_double;
-            cr.planningProblem.goalState.position.pos.point.y = story.m_Storys[count]->m_Acts[0]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->y.m_double;
-            // Heading
-            cr.planningProblem.goalState.position.orientation.exact = story.m_Storys[count]->m_Acts[0]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->h.m_double;
-            break;
+            if( story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs[0]->entityRef.m_string == egoRef)
+            {
+                std::cout << "Found Ego Goal Point" << std::endl;
+                bSuccess = true;
+                // Position
+                cr.planningProblem.goalState.position.pos.point.x = story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->x.m_double;
+                cr.planningProblem.goalState.position.pos.point.y = story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->y.m_double;
+                // Heading
+                cr.planningProblem.goalState.position.orientation.exact = story.m_Storys[i]->m_Acts[j]->m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->h.m_double;
+                break;
+
+            }
         }
     }
 
@@ -59,26 +81,29 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
     int object_cnt = 0;
 
     // Parse Obstacles
-    for (int count = 0; count < story.m_Init->m_Actions->m_Privates.size(); count++)
+    for (int i = 0; i < story.m_Init->m_Actions->m_Privates.size(); i++)
     {
         // std::cout << "loop start " << count << std::endl;
-        if (story.m_Init->m_Actions->m_Privates[count]->entityRef.m_string == "Obstacle")
+        for(int j = 0; j < obstacleRefs.size(); j++)
         {
-            object_cnt++;
-            commonroad::ObstacleInformation temp_obstacle;
-            std::cout << "Found Obstacle " << object_cnt << std::endl;
-            bSuccess = true;
-            // Position
-            temp_obstacle.initialState.position.point.x = story.m_Init->m_Actions->m_Privates[count]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->x.m_double;
-            temp_obstacle.initialState.position.point.y = story.m_Init->m_Actions->m_Privates[count]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->y.m_double;
-            // Heading
-            temp_obstacle.initialState.orientation.exact = story.m_Init->m_Actions->m_Privates[count]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->h.m_double;
-            
-            // Shape
-            temp_obstacle.shape.width = 1.5;
-            temp_obstacle.shape.length = 2.5;            
+            if (story.m_Init->m_Actions->m_Privates[i]->entityRef.m_string == obstacleRefs[j])
+            {
+                object_cnt++;
+                commonroad::ObstacleInformation temp_obstacle;
+                std::cout << "Found Obstacle " << object_cnt << std::endl;
+                bSuccess = true;
+                // Position
+                temp_obstacle.initialState.position.point.x = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->x.m_double;
+                temp_obstacle.initialState.position.point.y = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->y.m_double;
+                // Heading
+                temp_obstacle.initialState.orientation.exact = story.m_Init->m_Actions->m_Privates[i]->m_PrivateActions[0]->m_PrivateAction->m_TeleportAction->m_Position->m_Position->m_WorldPosition->h.m_double;
+                
+                // Shape
+                temp_obstacle.shape.width = 1.5;
+                temp_obstacle.shape.length = 2.5;      
 
-            cr.obstacles.push_back(temp_obstacle); 
+                cr.obstacles.push_back(temp_obstacle); 
+            }
         }
     }
 
