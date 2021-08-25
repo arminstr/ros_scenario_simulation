@@ -26,7 +26,7 @@
 	
 	<arg name="enableLogging" default="false" />
 	<arg name="enableInternalVisualization" default="true" />
-	<arg name="useDetectionHulls" default="false" />
+	<arg name="useDetectionHulls" default="true" />
 
 	<node pkg="lidar_kf_contour_track" type="lidar_kf_contour_track" name="lidar_kf_contour_track" output="screen">
 

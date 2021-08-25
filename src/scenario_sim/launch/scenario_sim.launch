@@ -14,7 +14,7 @@
 
     <include file="$(find scenario_goal)/launch/scenario_goal.launch"/>
 
-    <node pkg="tf_broadcaster" type="tf_broadcaster_node" name="tf_broadcaster" /> 
+    <node pkg="tf_broadcaster" type="tf_broadcaster_node" name="tf_broadcaster" />
 
 
     <include file="$(find scenario_sim)/launch/ci_driving.launch">
