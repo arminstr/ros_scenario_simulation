@@ -7,6 +7,8 @@ namespace commonroad {
 
 bool Load(std::string const &file, commonroad::CommonRoadData &common_road_data);
 
+bool checkFileTypeXML(std::string file);
+
 }
 
 
