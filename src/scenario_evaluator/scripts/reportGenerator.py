@@ -7,7 +7,9 @@ from commonroad.scenario.trajectory import State
 import json
 import matplotlib.pyplot as plt
 
-def generateReport(stateList, reportPath, scenarioName):
+def generateReport(stateList, reportPath, file_path):
+    _, scenarioName = os.path.split(file_path)
+    scenarioName, _ = os.path.splitext(scenarioName)
     rospy.loginfo("Starting Report Generation...")
     rospy.loginfo("Report will be stored at: %s", reportPath)
     rospy.loginfo("Scenario name: %s", scenarioName)
@@ -29,9 +31,14 @@ def generateReport(stateList, reportPath, scenarioName):
         "steeringRateCost": 0.0,
         "yawRate": [],
         "yawRateCost": 0.0,
-        "distanceToObstaclesCost": 0.0
+        "distanceToObstaclesCost": 0.0,
+        "pathToAccelFig": "",
+        "pathToVelFig": "",
+        "pathToSteerFig": "",
+        "pathToScenario": file_path
+
     }
-    
+
     for i, state in enumerate(stateList):
         scenarioResult["time"]  += 0.1
         scenarioResult["timeSteps"].append(state.time_step * 0.1)
@@ -53,9 +60,55 @@ def generateReport(stateList, reportPath, scenarioName):
             scenarioResult["jerk"].append( ( scenarioResult["acceleration"][i+1] - accel) / 0.1)
             scenarioResult["jerkCost"] += pow( ( scenarioResult["acceleration"][i+1] - accel) / 0.1, 2.0)
 
-    # JSON output
+    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["velocity"])],scenarioResult["velocity"])
+    plt.ylabel('Velociy [m/s]')
+    plt.xlabel('Time [s]')
+    plt.title('Velociy of Ego Vehicle')
+
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    json_filename = reportPath + "/" + timestr + "-" + scenarioName + ".json"
+    vel_png_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "vel_plot.png"
+    if not os.path.exists(os.path.dirname(vel_png_filename)):
+        try:
+            os.makedirs(os.path.dirname(vel_png_filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    plt.savefig(vel_png_filename)
+    plt.cla()
+    scenarioResult["pathToVelFig"] = vel_png_filename
+
+    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["acceleration"])],scenarioResult["acceleration"])
+    plt.ylabel('Acceleration [m/s^2]')
+    plt.xlabel('Time [s]')
+
+    accel_png_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "accel_plot.png"
+    if not os.path.exists(os.path.dirname(accel_png_filename)):
+        try:
+            os.makedirs(os.path.dirname(accel_png_filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    plt.savefig(accel_png_filename)
+    plt.cla()
+    scenarioResult["pathToAccelFig"] = accel_png_filename
+
+    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["steeringAngle"])],scenarioResult["steeringAngle"])
+    plt.ylabel('Steering Angle [deg]')
+    plt.xlabel('Time [s]')
+
+    steer_png_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "steer_plot.png"
+    if not os.path.exists(os.path.dirname(steer_png_filename)):
+        try:
+            os.makedirs(os.path.dirname(steer_png_filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    plt.savefig(steer_png_filename)
+    plt.cla()
+    scenarioResult["pathToSteerFig"] = steer_png_filename
+
+    # JSON output
+    json_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "scenario_data.json"
 
     json_object = json.dumps(scenarioResult, indent = 4)
 
@@ -67,51 +120,3 @@ def generateReport(stateList, reportPath, scenarioName):
                 raise
     with open(json_filename, "w") as outfile:
         outfile.write(json_object)
-
-    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["velocity"])],scenarioResult["velocity"])
-    plt.ylabel('Velociy [m/s]')
-    plt.xlabel('Time [s]')
-    plt.title('Velociy of Ego Vehicle')
-
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    vel_png_filename = reportPath + "/" + timestr + "-" + scenarioName + "_vel.png"
-    if not os.path.exists(os.path.dirname(vel_png_filename)):
-        try:
-            os.makedirs(os.path.dirname(vel_png_filename))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-    plt.savefig(vel_png_filename)
-    plt.cla()
-
-    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["acceleration"])],scenarioResult["acceleration"])
-    plt.ylabel('Acceleration [m/s^2]')
-    plt.xlabel('Time [s]')
-    plt.title('Acceleration of Ego Vehicle')
-
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    accel_png_filename = reportPath + "/" + timestr + "-" + scenarioName + "_accel.png"
-    if not os.path.exists(os.path.dirname(accel_png_filename)):
-        try:
-            os.makedirs(os.path.dirname(accel_png_filename))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-    plt.savefig(accel_png_filename)
-    plt.cla()
-
-    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["steeringAngle"])],scenarioResult["steeringAngle"])
-    plt.ylabel('Steering Angle [deg]')
-    plt.xlabel('Time [s]')
-    plt.title('Acceleration of Ego Vehicle')
-
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    steer_png_filename = reportPath + "/" + timestr + "-" + scenarioName + "_steer.png"
-    if not os.path.exists(os.path.dirname(steer_png_filename)):
-        try:
-            os.makedirs(os.path.dirname(steer_png_filename))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-    plt.savefig(steer_png_filename)
-    plt.cla()
