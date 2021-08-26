@@ -22,8 +22,7 @@ int main( int argc, char** argv )
   ros::NodeHandle n;
   ros::Publisher goal_pub = n.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10);
   ros::Publisher goal_marker_pub = n.advertise<visualization_msgs::Marker>("/sim_visu/goal_marker", 10);
-  ros::Publisher state_pub = n.advertise<visualization_msgs::MarkerArray>("/behavior_state", 10);
-  
+
   ros::Rate r(10);
   ros::NodeHandle nh;
 
@@ -72,10 +71,9 @@ int main( int argc, char** argv )
 
   while (ros::ok())
   {
-
     if (!bGoalPublished){
       
-      ros::Duration(1.0).sleep();
+      ros::Duration(5.0).sleep();
 
       geometry_msgs::PoseStamped goalPose;
       goalPose = getGoalPoseFromCommonRoad(cr, odr);
@@ -88,21 +86,11 @@ int main( int argc, char** argv )
       bGoalPublished = true;
     }
     
-
-
     if(bNoGoalFound)
     {
-      visualization_msgs::MarkerArray stateMarkerArray;
-      visualization_msgs::Marker stateMarker;
-      stateMarker.text = "End";
-      stateMarkerArray.markers.push_back(stateMarker);
-      state_pub.publish(stateMarkerArray);
-      stateMarkerArray.markers.clear();
-
       ROS_INFO("*** No Goal Position found ***");
       ROS_FATAL("*** Stopping Simulation ***");
     }
-    
     
     ros::spinOnce();
     
