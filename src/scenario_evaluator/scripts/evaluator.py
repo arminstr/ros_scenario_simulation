@@ -22,7 +22,7 @@ from commonroad.common.file_reader import CommonRoadFileReader
 from commonroad.common.solution import CommonRoadSolutionWriter, Solution, PlanningProblemSolution, VehicleModel, VehicleType, CostFunction
 
 # constant parameters
-max_steering_angle_deg = 70.0 
+max_steering_angle_deg = 60.0 
 
 # generate state list of the ego vehicle's trajectory
 state_list = []
@@ -73,9 +73,7 @@ def poseCallback(poseS):
         simFinished()
 
 def simFinished():
-    _, scenarioName = os.path.split(file_path)
-    scenarioName, _ = os.path.splitext(scenarioName)
-    generateReport(state_list, report_path, scenarioName)
+    generateReport(state_list, report_path, file_path)
     rospy.signal_shutdown("Evaluation Finsihed")
 
 def velocityCallback(twistS):
