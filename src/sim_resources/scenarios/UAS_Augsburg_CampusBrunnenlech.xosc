@@ -58,6 +58,51 @@
                 <Properties/>
             </Vehicle>
         </ScenarioObject>
+        <ScenarioObject name="Obstacle 3">
+            <Vehicle name="obstacle" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Obstacle 4">
+            <Vehicle name="obstacle" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Obstacle 5">
+            <Vehicle name="obstacle" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
     </Entities>
     <Storyboard>
         <Init>
@@ -97,6 +142,33 @@
                             </SpeedActionTarget>
                           </SpeedAction>
                         </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Obstacle 3">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-110.4486465454" y="200.487365723"  h="0.7"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Obstacle 4">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-119.4486465454" y="195.487365723"  h="0.75"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Obstacle 5">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-130.4486465454" y="185.487365723"  h="0.7"/>
+                            </Position>
+                        </TeleportAction>
                     </PrivateAction>
                 </Private>
             </Actions>
@@ -168,7 +240,7 @@
                                                         </Vertex>
                                                         <Vertex>
                                                             <Position>
-                                                                <WorldPosition x="-139.4486465454" y="185.487365723"  h="3.84"/>
+                                                                <WorldPosition x="-139.4486465454" y="185.487365723"  h="3.80"/>
                                                             </Position>
                                                         </Vertex>
                                                     </Polyline>
