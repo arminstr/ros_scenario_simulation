@@ -3,4 +3,5 @@
 build/
 devel/
 logs/
+reports/
 .catkin_workspace
