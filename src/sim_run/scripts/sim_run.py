@@ -39,8 +39,8 @@ globalGoal = 0
 
 
 def calcDist(x1,y1,x2,y2):
-     distance = math.sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1))
-     return distance
+    distance = math.sqrt(math.pow((x2 - x1),2) + math.pow((y2 - y1),2))
+    return distance
 
 def simFinished():
     global bSimulationFinished
@@ -59,9 +59,8 @@ def goalCallback(goal):
 
 def poseCallback(currentPose):
     if globalGoal == 0: return
-    pose = currentPose.pose
     # Check distance to goal
-    distance = calcDist(pose.position.x, pose.position.y,globalGoal.position.x, globalGoal.position.y)
+    distance = calcDist(currentPose.pose.position.x, currentPose.pose.position.y, globalGoal.position.x, globalGoal.position.y)
     if distance != 0 and distance < 5.0:
         simFinished()
 
@@ -90,13 +89,13 @@ def sim_run():
     while not rospy.is_shutdown():
         if bSimulationFinished:
             simWaitTimer += 1
-        if bSimulationFinished and simWaitTimer < simWaitLimit:
+        if bSimulationFinished and simWaitTimer >= simWaitLimit:
             topicname = os.popen("rosnode list | grep sim_core").readlines()
             if topicname == ['/sim_core\n']:
                 print("killing simulation")
                 os.system("rosnode kill sim_core")
                 rospy.loginfo("*** Simulation Files in Queue: %d", len(fileList))
-        if bSimulationFinished and len(fileList) > 0 and simWaitTimer >= simWaitLimit:
+        if bSimulationFinished and len(fileList) > 0 and simWaitTimer >= simWaitLimit*2:
             strCommand = 'roslaunch sim_start sim.launch pathToScenario:=' + file_path + '/' + fileList[0] + ' &'
             rospy.loginfo("launching: %s", strCommand)
             fileList.pop(0)
