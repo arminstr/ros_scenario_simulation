@@ -25,7 +25,7 @@ void callbackVehicleCommand(const autoware_msgs::VehicleCmd &msg);
 
 double max_accel = 5;   // m / s^2
 double max_brake = -10; // m / s^2
-double max_steering_angle = 70.0 / 180.0 * M_PI;
+double max_steering_angle = 60.0 / 180.0 * M_PI;
 autoware_msgs::VehicleCmd current_cmd;
 geometry_msgs::PoseStamped current_pose;
 geometry_msgs::TwistStamped current_velocity_base_link;
