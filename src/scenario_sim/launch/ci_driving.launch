@@ -16,7 +16,7 @@
 
   <!-- Motion Planning -->
   <include file="$(find scenario_sim)/launch/motion_planning.launch">
-    <arg name="steerAngleGainKP" 			default="0.7"/>
+    <arg name="steerAngleGainKP" 			default="1.5"/>
     <arg name="steerAngleGainKI" 			default="0.01"/>
 
     <arg name="accelGainKP" 				default="200"/>
