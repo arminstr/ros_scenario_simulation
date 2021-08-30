@@ -17,7 +17,7 @@ def generateReport(stateList, objectsLists, reportPath, file_path):
         "name": "",
         "pathLength": 0.0,
         "time": 0.0,
-        "size": [],
+        "dimension": [],
         "timeSteps": [],
         "position": [],
         "orientation": [],
@@ -35,6 +35,9 @@ def generateReport(stateList, objectsLists, reportPath, file_path):
         "distanceToObstaclesCost": 0.0,
         "obstacles": []
     }
+
+    scenarioResult["dimension"].append(5.0)
+    scenarioResult["dimension"].append(2.0)
 
     for i, state in enumerate(stateList):
         scenarioResult["time"]  += 0.1
