@@ -1,5 +1,6 @@
 #include "xosc.h"
 #include "commonroad/CommonRoad.hpp"
+#include <typeinfo>
 
 class openScenarioHelper{
     public:
