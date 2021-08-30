@@ -1,3 +1,14 @@
+var htmlCanvas = document.getElementById("scenarioCanvas");
+var meterToPixelFactor = htmlCanvas.height / 20.0;
+var zoomInButton = document.getElementById("scenarioCanvasZoomIn");
+zoomInButton.addEventListener("click", (event) => {
+    meterToPixelFactor *= 1.1;
+});
+var zoomOutButton = document.getElementById("scenarioCanvasZoomOut");
+zoomOutButton.addEventListener("click", (event) => {
+    meterToPixelFactor *= 0.9;
+});
+
 const fileSelector = document.getElementById('file-selector');
   fileSelector.addEventListener('change', (event) => {
     const fileList = event.target.files;
@@ -119,9 +130,7 @@ function drawCharts(scenario)
 
 function drawVideo(scenario, timeStep)
 {
-    var htmlCanvas = document.getElementById("scenarioCanvs");
     var ctx = htmlCanvas.getContext("2d");
-    var meterToPixelFactor = htmlCanvas.height / 20.0;
     var egoColor = "#00FF00";
     var egoLineWidth = 2.5;
     var egoLength = 5.0;
@@ -131,6 +140,8 @@ function drawVideo(scenario, timeStep)
     var egoTraceLength = 50;
     var pastEgoColor = "#6495ED";
     var bTraces = true;
+
+    
 
     // clear the canvas
     ctx.beginPath();
