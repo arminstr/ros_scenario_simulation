@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <!-- <script src="https://cdn.plot.ly/plotly-2.3.1.min.js"></script> -->
+        
+    </head>
+    <body>
+        <h1>CI Test Report</h1>
+        <p>This report contains the test results for a ROS based Path Planning Algorithm</p>
+        <input type="file" id="file-selector" accept=".json" style="width:100%;max-width:700px">
+        <h3>Dynamic Properties of Ego Vehicle</h3>
+        <!-- <div id="velocityChart" style="width:600px;height:400px;"></div>
+        <div id="accelerationChart" style="width:600px;height:400px;"></div>
+        <div id="jerkChart" style="width:600px;height:400px;"></div>
+        <div id="steeringChart" style="width:600px;height:400px;"></div> -->
+        <h3>Plot of Scenario History</h3>
+        <canvas id="scenarioCanvs" width="600" height="400" style ="border:1px solid #000000"></canvas>
+
+        <script src="report.js"></script>
+    </body>
+    <footer>
+        <small>© Autonomous Driving Research Group - University of Applied Sciences Augsburg</small>
+    </footer>
+</html>
