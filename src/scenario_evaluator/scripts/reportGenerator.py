@@ -2,12 +2,10 @@ import rospy
 import time
 import os
 import errno
-import math
 from commonroad.scenario.trajectory import State
 import json
-import matplotlib.pyplot as plt
 
-def generateReport(stateList, reportPath, file_path):
+def generateReport(stateList, objectsLists, reportPath, file_path):
     _, scenarioName = os.path.split(file_path)
     scenarioName, _ = os.path.splitext(scenarioName)
     rospy.loginfo("Starting Report Generation...")
@@ -19,7 +17,10 @@ def generateReport(stateList, reportPath, file_path):
         "name": "",
         "pathLength": 0.0,
         "time": 0.0,
+        "size": [],
         "timeSteps": [],
+        "position": [],
+        "orientation": [],
         "velocity":[],
         "acceleration": [],
         "accelerationCost": 0.0,
@@ -32,17 +33,15 @@ def generateReport(stateList, reportPath, file_path):
         "yawRate": [],
         "yawRateCost": 0.0,
         "distanceToObstaclesCost": 0.0,
-        "pathToAccelFig": "",
-        "pathToVelFig": "",
-        "pathToSteerFig": "",
-        "pathToScenario": file_path
-
+        "obstacles": []
     }
 
     for i, state in enumerate(stateList):
         scenarioResult["time"]  += 0.1
         scenarioResult["timeSteps"].append(state.time_step * 0.1)
         scenarioResult["pathLength"]  += state.velocity * 0.1
+        scenarioResult["position"].append(state.position.tolist())
+        scenarioResult["orientation"].append(state.orientation)
         scenarioResult["velocity"].append(state.velocity)
         if i < len(stateList)-1:
             scenarioResult["acceleration"].append( (stateList[i+1].velocity - state.velocity) / 0.1)
@@ -60,55 +59,13 @@ def generateReport(stateList, reportPath, file_path):
             scenarioResult["jerk"].append( ( scenarioResult["acceleration"][i+1] - accel) / 0.1)
             scenarioResult["jerkCost"] += pow( ( scenarioResult["acceleration"][i+1] - accel) / 0.1, 2.0)
 
-    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["velocity"])],scenarioResult["velocity"])
-    plt.ylabel('Velociy [m/s]')
-    plt.xlabel('Time [s]')
-    plt.title('Velociy of Ego Vehicle')
-
+    for object_list in objectsLists:
+        scenarioResult["obstacles"].append(object_list)
+    
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    vel_png_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "vel_plot.png"
-    if not os.path.exists(os.path.dirname(vel_png_filename)):
-        try:
-            os.makedirs(os.path.dirname(vel_png_filename))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-    plt.savefig(vel_png_filename)
-    plt.cla()
-    scenarioResult["pathToVelFig"] = vel_png_filename
-
-    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["acceleration"])],scenarioResult["acceleration"])
-    plt.ylabel('Acceleration [m/s^2]')
-    plt.xlabel('Time [s]')
-
-    accel_png_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "accel_plot.png"
-    if not os.path.exists(os.path.dirname(accel_png_filename)):
-        try:
-            os.makedirs(os.path.dirname(accel_png_filename))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-    plt.savefig(accel_png_filename)
-    plt.cla()
-    scenarioResult["pathToAccelFig"] = accel_png_filename
-
-    plt.plot(scenarioResult["timeSteps"][:len(scenarioResult["steeringAngle"])],scenarioResult["steeringAngle"])
-    plt.ylabel('Steering Angle [deg]')
-    plt.xlabel('Time [s]')
-
-    steer_png_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "steer_plot.png"
-    if not os.path.exists(os.path.dirname(steer_png_filename)):
-        try:
-            os.makedirs(os.path.dirname(steer_png_filename))
-        except OSError as exc: # Guard against race condition
-            if exc.errno != errno.EEXIST:
-                raise
-    plt.savefig(steer_png_filename)
-    plt.cla()
-    scenarioResult["pathToSteerFig"] = steer_png_filename
-
+    
     # JSON output
-    json_filename = reportPath + "/" + scenarioName + "/" + timestr + "/" + "scenario_data.json"
+    json_filename = reportPath + "/" + timestr + "-" + scenarioName + ".json"
 
     json_object = json.dumps(scenarioResult, indent = 4)
 
@@ -120,3 +77,30 @@ def generateReport(stateList, reportPath, file_path):
                 raise
     with open(json_filename, "w") as outfile:
         outfile.write(json_object)
+
+    # JSON overview generation
+    json_overview_filename = reportPath + "/scenario.json"
+
+    
+    if os.path.exists(json_overview_filename):
+        f = open(json_overview_filename, "r")
+        existing_scenario = json.load(f)
+        f.close()
+
+        existing_scenario["scenarios"].append(scenarioName)
+        existing_scenario["scenario_json_paths"].append(json_filename)
+
+        f = open(json_overview_filename, "w")
+        f.write(json.dumps(existing_scenario, indent = 4))
+        f.close()
+    else:
+        existing_scenario = {
+        "scenarios": [],
+        "scenario_json_paths": []
+        }
+        existing_scenario["scenarios"].append(scenarioName)
+        existing_scenario["scenario_json_paths"].append(json_filename)
+
+        f = open(json_overview_filename, "w")
+        f.write(json.dumps(existing_scenario, indent = 4))
+        f.close()

@@ -7,10 +7,10 @@ import os
 import pathlib
 import matplotlib.pyplot as plt
 from reportGenerator import generateReport
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, String
 from visualization_msgs.msg import MarkerArray
 from geometry_msgs.msg import PoseStamped, TwistStamped
-from autoware_msgs.msg import VehicleCmd
+from autoware_msgs.msg import VehicleCmd, DetectedObjectArray
 from commonroad.geometry.shape import Rectangle
 from commonroad.scenario.obstacle import DynamicObstacle, ObstacleType
 from commonroad.scenario.trajectory import Trajectory,State
@@ -26,6 +26,7 @@ max_steering_angle_deg = 60.0
 
 # generate state list of the ego vehicle's trajectory
 state_list = []
+objects_lists = []
 file_path = ''
 report_path = ''
 
@@ -37,6 +38,7 @@ currentVelocityY = 0.0
 currentYaw = 0.0
 currentSteeringAngle = 0.0
 globalGoal = 0
+detectedObjectArray = 0
 
 
 def yaw_from_quaternion(x, y, z, w):
@@ -73,7 +75,7 @@ def poseCallback(poseS):
         simFinished()
 
 def simFinished():
-    generateReport(state_list, report_path, file_path)
+    generateReport(state_list, objects_lists, report_path, file_path)
     rospy.signal_shutdown("Evaluation Finsihed")
 
 def velocityCallback(twistS):
@@ -89,6 +91,14 @@ def timeCallback(timeStep):
 def vehicleCmdCallback(cmd):
     global currentSteeringAngle
     currentSteeringAngle = max_steering_angle_deg * cmd.steer_cmd.steer / 100.0
+
+def endCallback(endState):
+    if endState.data == "StopTrigger":
+        simFinished()
+
+def objectListCallback(msg):
+    global detectedObjectArray
+    detectedObjectArray = msg
 
 def finish():
     global state_list
@@ -146,6 +156,7 @@ def evaluator():
     global lastTimeStep
     global file_path
     global report_path
+    global detectedObjectArray
     rospy.init_node('evaluator', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     rospy.Subscriber("/current_pose", PoseStamped, poseCallback)
@@ -153,6 +164,8 @@ def evaluator():
     rospy.Subscriber("/sim_timestep", Int32, timeCallback)
     rospy.Subscriber("/move_base_simple/goal", PoseStamped, goalCallback)
     rospy.Subscriber("/op_controller_cmd", VehicleCmd, vehicleCmdCallback)
+    rospy.Subscriber("/sim/end_state", String, endCallback)
+    rospy.Subscriber("/simulated/objects", DetectedObjectArray, objectListCallback)
 
     file_path = rospy.get_param("/pathToScenario")
     report_path = rospy.get_param("/pathForReport")
@@ -163,7 +176,17 @@ def evaluator():
             if currentTimeStep >= 0:
                 s = State(position=currentPosition, velocity=math.sqrt(math.pow(currentVelocityX,2) + math.pow(currentVelocityY,2)), orientation=currentYaw, steering_angle=currentSteeringAngle, time_step=currentTimeStep)
                 state_list.append(s)
-                rospy.loginfo(">>> Evaluator added state.")
+
+                objects = []
+                for msg_obj in detectedObjectArray.objects:
+                    obj_dict = {
+                        "position": [msg_obj.pose.position.x, msg_obj.pose.position.y],
+                        "dimension": [msg_obj.dimensions.x, msg_obj.dimensions.y],
+                        "orientation": [msg_obj.pose.orientation.x, msg_obj.pose.orientation.y, msg_obj.pose.orientation.z, msg_obj.pose.orientation.w]
+                    }
+                    objects.append(obj_dict)
+                objects_lists.append(objects)
+
             lastTimeStep = currentTimeStep
         
         rate.sleep()
