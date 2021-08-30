@@ -1,8 +1,9 @@
 <launch>
   <arg name="pathToScenario"/>
-  
+  <arg name="pathForReport"/>
   
   <param name="pathToScenario" value="$(arg pathToScenario)"/>
+  <param name="pathForReport" value="$(arg pathForReport)"/>
   <!-- topic interface -->
   <node pkg="sim_start" type="sim_start_node" name="start" output="screen"/>
 </launch>

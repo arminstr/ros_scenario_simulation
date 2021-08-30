@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pathlib
 import matplotlib.pyplot as plt
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, String
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from visualization_msgs.msg import MarkerArray
 from autoware_msgs.msg import Waypoint
@@ -33,10 +33,8 @@ currentVelocityY = 0.0
 currentYaw = 0.0
 bSimulationFinished = True
 simWaitTimer = 0
-simWaitLimit = 5
+simWaitLimit = 10
 globalGoal = 0
-
-
 
 def calcDist(x1,y1,x2,y2):
     distance = math.sqrt(math.pow((x2 - x1),2) + math.pow((y2 - y1),2))
@@ -64,6 +62,10 @@ def poseCallback(currentPose):
     if distance != 0 and distance < 5.0:
         simFinished()
 
+def endCallback(endState):
+    if endState.data == "StopTrigger":
+        simFinished()
+
 def sim_run():
     global lastTimeStep
     global file_path
@@ -75,8 +77,12 @@ def sim_run():
     rospy.Subscriber("/current_pose", PoseStamped, poseCallback)
     rospy.Subscriber("/move_base_simple/goal", PoseStamped, goalCallback)
     rospy.Subscriber("/sim_timestep", Int32, timeCallback)
+    rospy.Subscriber("/sim/end_state", String, endCallback)
 
     file_path = rospy.get_param("/pathToScenario")
+    report_path = rospy.get_param("/pathForReport")
+    if os.path.exists(report_path + "/scenario.json"):
+        os.remove(report_path + "/scenario.json")
 
     fileList = []
     for _, _, files in os.walk(file_path):
@@ -96,7 +102,7 @@ def sim_run():
                 os.system("rosnode kill sim_core")
                 rospy.loginfo("*** Simulation Files in Queue: %d", len(fileList))
         if bSimulationFinished and len(fileList) > 0 and simWaitTimer >= simWaitLimit*2:
-            strCommand = 'roslaunch sim_start sim.launch pathToScenario:=' + file_path + '/' + fileList[0] + ' &'
+            strCommand = 'roslaunch sim_start sim.launch pathToScenario:=' + file_path + '/' + fileList[0] + ' pathForReport:=' + report_path +  ' &'
             rospy.loginfo("launching: %s", strCommand)
             fileList.pop(0)
             bSimulationFinished = False

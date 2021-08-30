@@ -1,8 +1,10 @@
 <launch>
     <arg name="pathToScenario"/>
     <arg name="pathToOpenDrive" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/map/campus-hsa.xodr"/>
-    <arg name="pathForReport" default="$(env HOME)/ros_scenario_simulation/reports"/>
-    
+    <arg name="pathForReport"/>
+  
+
+    <param name="pathForReport" value="$(arg pathForReport)"/>
     <param name="pathToScenario" value="$(arg pathToScenario)"/>
     <param name="pathToOpenDrive" value="$(arg pathToOpenDrive)"/>
     
