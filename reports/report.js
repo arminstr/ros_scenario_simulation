@@ -17,14 +17,24 @@ function readScenarioJson(file)
     reader.addEventListener('load', (event) => {
         scenario_content = JSON.parse(reader.result);
         // drawCharts(scenario_content);
+        startVideo(scenario_content);
         
-        for(var i = 0; i < scenario_content["timeSteps"].length; i++) 
-        {
-            drawVideo(scenario_content, i);
-        }
     });
     console.log(file);
     reader.readAsText(file);
+}
+
+function startVideo(scenario){
+    var i = 0;
+    var tid = setInterval(function() {
+        drawVideo(scenario, i);
+        i++;
+        if(i >= scenario["timeSteps"].length)
+        {
+            clearInterval(tid);
+            startVideo(scenario);
+        }
+    }, 100);
 }
 
 function drawCharts(scenario)
@@ -111,26 +121,54 @@ function drawVideo(scenario, timeStep)
 {
     var htmlCanvas = document.getElementById("scenarioCanvs");
     var ctx = htmlCanvas.getContext("2d");
+    var meterToPixelFactor = htmlCanvas.height / 20.0;
+    var egoColor = "#00FF00";
+    var egoLineWidth = 2.5;
+    var egoLength = 5.0;
+    var egoWidth = 2.5;
+    var obstacleColor = "#FF0000";
+    var obstacleLineWidth = 1.0;
+    var egoTraceLength = 50;
+    var pastEgoColor = "#6495ED";
+    var bTraces = true;
 
     // clear the canvas
     ctx.beginPath();
     ctx.clearRect(0, 0, htmlCanvas.width, htmlCanvas.height);
 
-    console.log(">> new frame");
-    var egoX = scenario["position"][timeStep][0];
-    var egoY = scenario["position"][timeStep][1];
-    var egoYaw = scenario["orientation"][timeStep];
-    console.log(egoX, egoY, egoYaw);
-
+    if( bTraces == true) 
+    {
+        var startStep = 0;
+        if(timeStep > egoTraceLength) 
+        {
+            startStep = timeStep - egoTraceLength;
+        }
+        for(var j = startStep; j < timeStep; j+=2)
+        {
+            var pastEgoX = scenario["position"][j][0];
+            var pastEgoY = scenario["position"][j][1];
+            var pastEgoYaw = scenario["orientation"][j];
+            var egoLength = scenario["dimension"][0];
+            var egoWidth = scenario["dimension"][1];
+            draw_global_pose_in_vehicle_frame(htmlCanvas, ctx, scenario, timeStep, meterToPixelFactor, pastEgoColor, 1.0,
+                pastEgoX, pastEgoY, pastEgoYaw, egoLength, egoWidth);
+        }
+    }
+    
     for(var i = 0; i < scenario["obstacles"][timeStep].length; i++)
     {
-        console.log(scenario["obstacles"][timeStep][i]["position"]);
-        console.log(yaw_from_quaternion(scenario["obstacles"][timeStep][i]["orientation"]));
-        // ctx.beginPath();
-        // ctx.moveTo(this.from.x, this.from.y);
-        // ctx.lineTo(this.to.x, this.to.y);
-        // ctx.stroke();
+        var obstacleX = scenario["obstacles"][timeStep][i]["position"][0];
+        var obstacleY = scenario["obstacles"][timeStep][i]["position"][1];
+        var obstacleYaw = yaw_from_quaternion(scenario["obstacles"][timeStep][i]["orientation"]);
+        var obstacleLength = scenario["obstacles"][timeStep][i]["dimension"][0];
+        var obstacleWidth = scenario["obstacles"][timeStep][i]["dimension"][1];
+
+        draw_global_pose_in_vehicle_frame(htmlCanvas, ctx, scenario, timeStep, meterToPixelFactor, obstacleColor, obstacleLineWidth,
+            obstacleX, obstacleY, obstacleYaw, obstacleLength, obstacleWidth);
     }
+
+    draw_ego_pose(htmlCanvas, ctx, scenario, timeStep, meterToPixelFactor, egoColor, egoLineWidth);
+
 }
 
 function yaw_from_quaternion(quanternionArray)
@@ -141,4 +179,91 @@ function yaw_from_quaternion(quanternionArray)
      
     return yaw_z;
 }
-        
+
+function convert_global_to_vehicle_frame(x, y, egoX, egoY, egoYaw)
+{
+    var dgx = x - egoX;
+    var dgy = y - egoY;
+    var dX = Math.sin(egoYaw - Math.atan2(dgy , dgx)) * Math.sqrt(Math.pow(dgx, 2) + Math.pow(dgy, 2));
+    var dY = Math.cos(egoYaw - Math.atan2(dgy , dgx)) * Math.sqrt(Math.pow(dgx, 2) + Math.pow(dgy, 2));
+     
+    return [dX, dY];
+}
+
+function draw_ego_pose(canvas, ctx, scenario, timeStep, mTPF, color, lineWidth) 
+{
+    var centerX = canvas.width/2;
+    var centerY = canvas.height/2;
+
+    var egoYaw = scenario["orientation"][timeStep];
+    var egoLength = scenario["dimension"][0];
+    var egoWidth = scenario["dimension"][1];
+
+    // delta x and y in length axis
+    var d_length = [ Math.cos(egoYaw)*egoLength/2, Math.sin(egoYaw)*egoLength/2 ];
+    // delta x and y in with axis
+    var d_width = [ Math.cos(egoYaw - Math.PI/2)*egoWidth/2, Math.sin(egoYaw - Math.PI/2)*egoWidth/2 ];
+
+    var ego0 = [+ d_length[0] + d_width[0], + d_length[1] + d_width[1]];
+    var ego1 = [+ d_length[0] - d_width[0], + d_length[1] - d_width[1]];
+    var ego2 = [- d_length[0] + d_width[0], - d_length[1] + d_width[1]];
+    var ego3 = [- d_length[0] - d_width[0], - d_length[1] - d_width[1]];
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * ego0[0], centerY + mTPF * ego0[1]);
+    ctx.lineTo(centerX + mTPF * ego1[0], centerY + mTPF * ego1[1]);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * ego0[0], centerY + mTPF * ego0[1]);
+    ctx.lineTo(centerX + mTPF * ego2[0], centerY + mTPF * ego2[1]);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * ego2[0], centerY + mTPF * ego2[1]);
+    ctx.lineTo(centerX + mTPF * ego3[0], centerY + mTPF * ego3[1]);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * ego3[0], centerY + mTPF * ego3[1]);
+    ctx.lineTo(centerX + mTPF * ego1[0], centerY + mTPF * ego1[1]);
+    ctx.stroke();
+}
+
+function draw_global_pose_in_vehicle_frame(canvas, ctx, scenario, timeStep, mTPF, color, lineWidth, poseX, poseY, poseYaw, poseLength, poseWidth) 
+{
+    var centerX = canvas.width/2;
+    var centerY = canvas.height/2;
+
+    var egoX = scenario["position"][timeStep][0];
+    var egoY = scenario["position"][timeStep][1];
+    var egoYaw = egoYaw = -Math.PI/2;
+
+    // delta x and y in length axis
+    var d_length = [ Math.cos(poseYaw)*poseLength/2, Math.sin(poseYaw)*poseLength/2 ];
+    // delta x and y in with axis
+    var d_width = [ Math.cos(poseYaw - Math.PI/2)*poseWidth/2, Math.sin(poseYaw - Math.PI/2)*poseWidth/2 ];
+
+    var pos0 = convert_global_to_vehicle_frame(poseX + d_length[0] + d_width[0], poseY + d_length[1] + d_width[1], egoX, egoY, egoYaw);
+    var pos1 = convert_global_to_vehicle_frame(poseX + d_length[0] - d_width[0], poseY + d_length[1] - d_width[1], egoX, egoY, egoYaw);
+    var pos2 = convert_global_to_vehicle_frame(poseX - d_length[0] + d_width[0], poseY - d_length[1] + d_width[1], egoX, egoY, egoYaw);
+    var pos3 = convert_global_to_vehicle_frame(poseX - d_length[0] - d_width[0], poseY - d_length[1] - d_width[1], egoX, egoY, egoYaw);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * pos0[0], centerY + mTPF * pos0[1]);
+    ctx.lineTo(centerX + mTPF * pos1[0], centerY + mTPF * pos1[1]);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * pos0[0], centerY + mTPF * pos0[1]);
+    ctx.lineTo(centerX + mTPF * pos2[0], centerY + mTPF * pos2[1]);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * pos2[0], centerY + mTPF * pos2[1]);
+    ctx.lineTo(centerX + mTPF * pos3[0], centerY + mTPF * pos3[1]);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX + mTPF * pos3[0], centerY + mTPF * pos3[1]);
+    ctx.lineTo(centerX + mTPF * pos1[0], centerY + mTPF * pos1[1]);
+    ctx.stroke();
+}
