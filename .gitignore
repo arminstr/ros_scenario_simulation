@@ -4,4 +4,5 @@ build/
 devel/
 logs/
 reports/*.json
+reports/map.js
 .catkin_workspace

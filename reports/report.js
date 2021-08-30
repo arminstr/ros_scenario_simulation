@@ -1,3 +1,4 @@
+var timerId = 0;
 var htmlCanvas = document.getElementById("scenarioCanvas");
 var meterToPixelFactor = htmlCanvas.height / 20.0;
 var zoomInButton = document.getElementById("scenarioCanvasZoomIn");
@@ -13,6 +14,7 @@ const fileSelector = document.getElementById('file-selector');
   fileSelector.addEventListener('change', (event) => {
     const fileList = event.target.files;
     console.log(fileList);
+    clearInterval(timerId);
     readScenarioJson(fileList[0]);
 });
 
@@ -37,12 +39,12 @@ function readScenarioJson(file)
 
 function startVideo(scenario){
     var i = 0;
-    var tid = setInterval(function() {
+    timerId = setInterval(function() {
         drawVideo(scenario, i);
         i++;
         if(i >= scenario["timeSteps"].length)
         {
-            clearInterval(tid);
+            clearInterval(timerId);
             startVideo(scenario);
         }
     }, 100);
@@ -140,14 +142,16 @@ function drawVideo(scenario, timeStep)
     var egoTraceLength = 50;
     var pastEgoColor = "#6495ED";
     var bTraces = true;
-
-    
+    var mapLineColor = "#AAAAAA";
+    var mapLineWidth = 1.0;
 
     // clear the canvas
     ctx.beginPath();
     ctx.clearRect(0, 0, htmlCanvas.width, htmlCanvas.height);
 
-    if( bTraces == true) 
+    draw_map(htmlCanvas, ctx, scenario, timeStep, meterToPixelFactor, mapLineColor, mapLineWidth);
+
+    if( bTraces === true) 
     {
         var startStep = 0;
         if(timeStep > egoTraceLength) 
@@ -247,7 +251,7 @@ function draw_global_pose_in_vehicle_frame(canvas, ctx, scenario, timeStep, mTPF
 
     var egoX = scenario["position"][timeStep][0];
     var egoY = scenario["position"][timeStep][1];
-    var egoYaw = egoYaw = -Math.PI/2;
+    var egoYaw = -Math.PI/2;
 
     // delta x and y in length axis
     var d_length = [ Math.cos(poseYaw)*poseLength/2, Math.sin(poseYaw)*poseLength/2 ];
@@ -277,4 +281,40 @@ function draw_global_pose_in_vehicle_frame(canvas, ctx, scenario, timeStep, mTPF
     ctx.moveTo(centerX + mTPF * pos3[0], centerY + mTPF * pos3[1]);
     ctx.lineTo(centerX + mTPF * pos1[0], centerY + mTPF * pos1[1]);
     ctx.stroke();
+}
+
+function draw_map(canvas, ctx, scenario, timeStep, mTPF, lineColor, lineWidth) 
+{
+    var centerX = canvas.width/2;
+    var centerY = canvas.height/2;
+
+    var egoX = scenario["position"][timeStep][0];
+    var egoY = scenario["position"][timeStep][1];
+    var egoYaw = -Math.PI/2;
+
+    
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = lineWidth;
+
+    let markers_index;
+    for (markers_index in scenario_map["markers"]) {
+        if ( scenario_map["markers"][markers_index]["type"] === 4)
+        {
+            
+            ctx.beginPath();
+            let points_index;
+            for (points_index in scenario_map["markers"][markers_index]["points"]) {
+                var point = scenario_map["markers"][markers_index]["points"][points_index];
+                var p = convert_global_to_vehicle_frame(point[0], point[1], egoX, egoY, egoYaw);
+                if( points_index===0 ){
+                    ctx.moveTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
+                }
+                else
+                {
+                    ctx.lineTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
+                }
+            }
+            ctx.stroke();
+        }
+    }
 }

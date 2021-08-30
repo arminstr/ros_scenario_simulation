@@ -8,9 +8,9 @@ import pathlib
 import matplotlib.pyplot as plt
 from reportGenerator import generateReport
 from std_msgs.msg import Int32, String
-from visualization_msgs.msg import MarkerArray
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from autoware_msgs.msg import VehicleCmd, DetectedObjectArray
+from visualization_msgs.msg import MarkerArray
 from commonroad.geometry.shape import Rectangle
 from commonroad.scenario.obstacle import DynamicObstacle, ObstacleType
 from commonroad.scenario.trajectory import Trajectory,State
@@ -39,6 +39,7 @@ currentYaw = 0.0
 currentSteeringAngle = 0.0
 globalGoal = 0
 detectedObjectArray = 0
+centerLinesMarkerArray = 0
 
 
 def yaw_from_quaternion(x, y, z, w):
@@ -75,7 +76,7 @@ def poseCallback(poseS):
         simFinished()
 
 def simFinished():
-    generateReport(state_list, objects_lists, report_path, file_path)
+    generateReport(state_list, objects_lists, centerLinesMarkerArray, report_path, file_path)
     rospy.signal_shutdown("Evaluation Finsihed")
 
 def velocityCallback(twistS):
@@ -99,6 +100,10 @@ def endCallback(endState):
 def objectListCallback(msg):
     global detectedObjectArray
     detectedObjectArray = msg
+
+def centerLinesCallback(msg):
+    global centerLinesMarkerArray
+    centerLinesMarkerArray = msg
 
 def finish():
     global state_list
@@ -166,6 +171,7 @@ def evaluator():
     rospy.Subscriber("/op_controller_cmd", VehicleCmd, vehicleCmdCallback)
     rospy.Subscriber("/sim/end_state", String, endCallback)
     rospy.Subscriber("/simulated/objects", DetectedObjectArray, objectListCallback)
+    rospy.Subscriber("/vector_map_center_lines_rviz", MarkerArray, centerLinesCallback)
 
     file_path = rospy.get_param("/pathToScenario")
     report_path = rospy.get_param("/pathForReport")

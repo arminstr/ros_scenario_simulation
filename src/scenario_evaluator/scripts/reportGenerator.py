@@ -2,10 +2,9 @@ import rospy
 import time
 import os
 import errno
-from commonroad.scenario.trajectory import State
 import json
 
-def generateReport(stateList, objectsLists, reportPath, file_path):
+def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path):
     _, scenarioName = os.path.split(file_path)
     scenarioName, _ = os.path.splitext(scenarioName)
     rospy.loginfo("Starting Report Generation...")
@@ -64,7 +63,7 @@ def generateReport(stateList, objectsLists, reportPath, file_path):
 
     for object_list in objectsLists:
         scenarioResult["obstacles"].append(object_list)
-    
+
     timestr = time.strftime("%Y%m%d-%H%M%S")
     
     # JSON output
@@ -107,3 +106,24 @@ def generateReport(stateList, objectsLists, reportPath, file_path):
         f = open(json_overview_filename, "w")
         f.write(json.dumps(existing_scenario, indent = 4))
         f.close()
+
+    mapStructure = {
+        "markers": []
+    }
+
+    for marker in centerLinesMarkerArray.markers:
+        markerSerializable = {
+            "type": marker.type,
+            "points": []
+        }
+        for point in marker.points:
+            pointSerializable = [point.x, point.y]
+            markerSerializable["points"].append(pointSerializable)
+        mapStructure["markers"].append(markerSerializable)
+
+    # Map storage
+    map_filename = reportPath + "/map.js"
+    map_f = open(map_filename, "w")
+    map_f.write("scenario_map = ")
+    map_f.write(json.dumps(mapStructure, indent = 4))
+    map_f.close()
