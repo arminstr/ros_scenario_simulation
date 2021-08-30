@@ -3,6 +3,7 @@ import time
 import os
 import errno
 import json
+import math
 
 def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path):
     _, scenarioName = os.path.split(file_path)
@@ -38,6 +39,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
     scenarioResult["dimension"].append(5.0)
     scenarioResult["dimension"].append(2.0)
 
+    # iterate trough states and append the information to the dictionary for storage
     for i, state in enumerate(stateList):
         scenarioResult["time"]  += 0.1
         scenarioResult["timeSteps"].append(state.time_step * 0.1)
@@ -56,14 +58,39 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         if i < len(stateList)-1:
             scenarioResult["yawRate"].append((stateList[i+1].orientation - state.orientation) / 0.1 )
             scenarioResult["yawRateCost"] += pow((stateList[i+1].orientation - state.orientation) / 0.1, 2.0)
+    
+    # iterate one element less due to integration
     for i, accel in enumerate(scenarioResult["acceleration"]):
         if i < len(scenarioResult["acceleration"])-1:
             scenarioResult["jerk"].append( ( scenarioResult["acceleration"][i+1] - accel) / 0.1)
             scenarioResult["jerkCost"] += pow( ( scenarioResult["acceleration"][i+1] - accel) / 0.1, 2.0)
 
+    # apped the objects in the object list
     for object_list in objectsLists:
         scenarioResult["obstacles"].append(object_list)
 
+    # basic calculation of distance to Obstacles 
+    # TODO: Change for compliance with CommonRoad
+    for position_index, position in enumerate(scenarioResult["position"]):
+        for obstacle in scenarioResult["obstacles"][position_index]:
+            scenarioResult["distanceToObstaclesCost"] += math.sqrt(pow(position[0]-obstacle["position"][0], 2.0) + pow(position[1]-obstacle["position"][1], 2.0))
+
+    
+    mapStructure = {
+        "markers": []
+    }
+
+    for marker in centerLinesMarkerArray.markers:
+        markerSerializable = {
+            "type": marker.type,
+            "points": []
+        }
+        for point in marker.points:
+            pointSerializable = [point.x, point.y]
+            markerSerializable["points"].append(pointSerializable)
+        mapStructure["markers"].append(markerSerializable)
+
+    # FILE OUTPUT SECTION 
     timestr = time.strftime("%Y%m%d-%H%M%S")
     
     # JSON output
@@ -107,20 +134,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         f.write(json.dumps(existing_scenario, indent = 4))
         f.close()
 
-    mapStructure = {
-        "markers": []
-    }
-
-    for marker in centerLinesMarkerArray.markers:
-        markerSerializable = {
-            "type": marker.type,
-            "points": []
-        }
-        for point in marker.points:
-            pointSerializable = [point.x, point.y]
-            markerSerializable["points"].append(pointSerializable)
-        mapStructure["markers"].append(markerSerializable)
-
+    
     # Map storage
     map_filename = reportPath + "/map.js"
     map_f = open(map_filename, "w")
