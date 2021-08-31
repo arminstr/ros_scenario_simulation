@@ -17,6 +17,17 @@ zoomOutButton.addEventListener("click", (event) => {
     meterToPixelFactor *= 0.9;
 });
 
+var pathLengthCostTD = document.getElementById("pathLengthCost");
+var accelerationCostTD = document.getElementById("accelerationCost");
+var jerkCostTD = document.getElementById("jerkCost");
+var steeringAngleCostTD = document.getElementById("steeringAngleCost");
+var steeringRateCostTD = document.getElementById("steeringRateCost");
+var yawRateCostTD = document.getElementById("yawRateCost");
+var dTObstaclesCostTD = document.getElementById("dTObstaclesCost");
+var dTCenterLineCostTD = document.getElementById("dTCenterLineCost");
+var costSumTD = document.getElementById("costSum");
+
+
 const fileSelector = document.getElementById('file-selector');
   fileSelector.addEventListener('change', (event) => {
     const fileList = event.target.files;
@@ -38,10 +49,26 @@ function readScenarioJson(file)
         scenario_content = JSON.parse(reader.result);
         drawCharts(scenario_content);
         startVideo(scenario_content);
-        
+        fillCostTable(scenario_content);
     });
     console.log(file);
     reader.readAsText(file);
+}
+
+function fillCostTable(scenario) 
+{
+    
+    pathLengthCostTD.innerHTML = (Math.round(scenario["pathLength"] * 100) / 100).toFixed(2);
+    accelerationCostTD.innerHTML = (Math.round(scenario["accelerationCost"] * 100) / 100).toFixed(2);
+    jerkCostTD.innerHTML = (Math.round(scenario["jerkCost"] * 100) / 100).toFixed(2);
+    steeringAngleCostTD.innerHTML = (Math.round(scenario["steeringAngleCost"] * 100) / 100).toFixed(2);
+    steeringRateCostTD.innerHTML = (Math.round(scenario["steeringRateCost"] * 100) / 100).toFixed(2);
+    yawRateCostTD.innerHTML = (Math.round(scenario["yawRateCost"] * 100) / 100).toFixed(2);
+    dTObstaclesCostTD.innerHTML = (Math.round(scenario["distanceToObstaclesCost"] * 100) / 100).toFixed(2);
+    dTCenterLineCostTD.innerHTML = (Math.round(scenario["distanceToCenterLinesCost"] * 100) / 100).toFixed(2);
+    var costSum = scenario["pathLength"] + scenario["accelerationCost"] + scenario["jerkCost"] + scenario["steeringAngleCost"] + 
+        scenario["steeringRateCost"] + scenario["yawRateCost"] + scenario["distanceToObstaclesCost"] + scenario["distanceToCenterLinesCost"];
+    costSumTD.innerHTML = (Math.round(costSum * 100) / 100).toFixed(2);
 }
 
 function startVideo(scenario){
