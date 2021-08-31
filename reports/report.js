@@ -1,3 +1,10 @@
+// ros_scenario_simulation
+// Visualization of CI Framework
+// Copyright 2021, Armin Straller,
+// University of Applied Sciences Augsburg
+// All rights reserved.
+// Licensed under the MIT license
+
 var timerId = 0;
 var htmlCanvas = document.getElementById("scenarioCanvas");
 var meterToPixelFactor = htmlCanvas.height / 20.0;
@@ -29,7 +36,7 @@ function readScenarioJson(file)
     const reader = new FileReader();
     reader.addEventListener('load', (event) => {
         scenario_content = JSON.parse(reader.result);
-        // drawCharts(scenario_content);
+        drawCharts(scenario_content);
         startVideo(scenario_content);
         
     });
@@ -52,7 +59,6 @@ function startVideo(scenario){
 
 function drawCharts(scenario)
 {
-    clear_Canavs();
     var vel_div = document.getElementById('velocityChart');
     // Define Data
     var vel_data = [{
@@ -128,6 +134,44 @@ function drawCharts(scenario)
 
     // Display using Plotly
     Plotly.newPlot(steer_div, steer_data, steer_layout);
+
+    var steering_rate_div = document.getElementById('steeringRateChart');
+    // Define Data
+    var steering_rate_data = [{
+        x: scenario["timeSteps"],
+        y: scenario["steeringRate"],
+        mode: "lines",
+        type: "scatter"
+    }];
+
+    // Define Layout
+    var steering_rate_layout = {
+        xaxis: {title: "Time [s]"},
+        yaxis: {title: "Steering Rate [deg/s]"},
+        title: "Steering Rate of Ego Vehicle [deg/s]"
+    };
+
+    // Display using Plotly
+    Plotly.newPlot(steering_rate_div, steering_rate_data, steering_rate_layout);
+
+    var yaw_rate_div = document.getElementById('yawRateChart');
+    // Define Data
+    var yaw_rate_data = [{
+        x: scenario["timeSteps"],
+        y: scenario["yawRate"],
+        mode: "lines",
+        type: "scatter"
+    }];
+
+    // Define Layout
+    var yaw_rate_layout = {
+        xaxis: {title: "Time [s]"},
+        yaxis: {title: "Yaw Rate [rad/s]"},
+        title: "Yaw Rate of Ego Vehicle [rad/s]"
+    };
+
+    // Display using Plotly
+    Plotly.newPlot(yaw_rate_div, yaw_rate_data, yaw_rate_layout);
 }
 
 function drawVideo(scenario, timeStep)
@@ -298,23 +342,19 @@ function draw_map(canvas, ctx, scenario, timeStep, mTPF, lineColor, lineWidth)
 
     let markers_index;
     for (markers_index in scenario_map["markers"]) {
-        if ( scenario_map["markers"][markers_index]["type"] === 4)
-        {
-            
-            ctx.beginPath();
-            let points_index;
-            for (points_index in scenario_map["markers"][markers_index]["points"]) {
-                var point = scenario_map["markers"][markers_index]["points"][points_index];
-                var p = convert_global_to_vehicle_frame(point[0], point[1], egoX, egoY, egoYaw);
-                if( points_index===0 ){
-                    ctx.moveTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
-                }
-                else
-                {
-                    ctx.lineTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
-                }
+        ctx.beginPath();
+        let points_index;
+        for (points_index in scenario_map["markers"][markers_index]["points"]) {
+            var point = scenario_map["markers"][markers_index]["points"][points_index];
+            var p = convert_global_to_vehicle_frame(point[0], point[1], egoX, egoY, egoYaw);
+            if( points_index===0 ){
+                ctx.moveTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
             }
-            ctx.stroke();
+            else
+            {
+                ctx.lineTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
+            }
         }
+        ctx.stroke();
     }
 }

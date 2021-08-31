@@ -1,23 +1,109 @@
+<!--
+    ros_scenario_simulation
+    Visualization of CI Framework
+    Copyright 2021, Armin Straller,
+    University of Applied Sciences Augsburg
+    All rights reserved.
+    Licensed under the MIT license
+-->
+
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
-        <!-- <script src="https://cdn.plot.ly/plotly-2.3.1.min.js"></script> -->
+        <script src="plotly-2.4.1.min.js"></script>
+        <link rel="stylesheet" href="style.css">
         
     </head>
     <body>
         <h1>CI Test Report</h1>
         <p>This report contains the test results for a ROS based Path Planning Algorithm</p>
         <input type="file" id="file-selector" accept=".json" style="width:100%;max-width:700px">
-        <h3>Dynamic Properties of Ego Vehicle</h3>
-        <!-- <div id="velocityChart" style="width:600px;height:400px;"></div>
-        <div id="accelerationChart" style="width:600px;height:400px;"></div>
-        <div id="jerkChart" style="width:600px;height:400px;"></div>
-        <div id="steeringChart" style="width:600px;height:400px;"></div> -->
+        <h3>Cost Results</h3>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Cost</th>
+                <th>Weighted Cost</th>
+            </tr>
+            <tr>
+                <td>Path Length</td>
+                <td id="pathLengthCost"></td>
+                <td id="pathLengthWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Acceleration</td>
+                <td id="accelerationCost"></td>
+                <td id="accelerationWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Jerk</td>
+                <td id="jerkCost"></td>
+                <td id="jerkWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Steering Angle</td>
+                <td id="steeringAngleCost"></td>
+                <td id="steeringAngleWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Steering Rate</td>
+                <td id="steeringRateCost"></td>
+                <td id="steeringRateWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Yaw Rate</td>
+                <td id="yawRateCost"></td>
+                <td id="yawRateWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Distance to Obstacles</td>
+                <td id="dTObstaclesCost"></td>
+                <td id="dTObstaclesWeightedCost"></td>
+            </tr>
+            <tr>
+                <td>Distance to Center Line</td>
+                <td id="dTCenterLineCost"></td>
+                <td id="dTCenterLineWeightedCost"></td>
+            </tr>
+            <tr>
+                <th>Total Sum</th>
+                <th id="costSum"></th>
+                <th id="weightedCostSum"></th>
+            </tr>
+        </table>
         <h3>Plot of Scenario Maneuver</h3>
+        <div class="row">
+            <button id="scenarioCanvasZoomIn">+</button>
+            <button id="scenarioCanvasZoomOut">-</button>
+        </div>
         <canvas id="scenarioCanvas" width="800" height="500" style ="border:1px solid #757575"></canvas>
-        <button id="scenarioCanvasZoomIn">+</button>
-        <button id="scenarioCanvasZoomOut">-</button>
+        
+        
+        <h3>Dynamic Properties of Ego Vehicle</h3>
+        <div class="row">
+            <div class="column">
+                <div id="velocityChart"></div>
+            </div>
+            <div class="column">
+                <div id="accelerationChart"></div>
+            </div>
+            <div class="column">
+                <div id="jerkChart"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <div id="steeringChart"></div>
+            </div>
+            <div class="column">
+                <div id="steeringRateChart"></div>
+            </div>
+            <div class="column">
+                <div id="yawRateChart"></div>
+            </div>
+        </div>
+        
         <script src="map.js"></script>
         <script src="report.js"></script>
     </body>
