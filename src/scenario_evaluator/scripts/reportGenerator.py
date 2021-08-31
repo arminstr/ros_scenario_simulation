@@ -5,6 +5,9 @@ import errno
 import json
 import math
 
+# decreasing this factor increases the influence of close obstacles
+additionalObstacleWeight = 0.1 
+
 def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path):
     _, scenarioName = os.path.split(file_path)
     scenarioName, _ = os.path.splitext(scenarioName)
@@ -33,6 +36,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         "yawRate": [],
         "yawRateCost": 0.0,
         "distanceToObstaclesCost": 0.0,
+        "distanceToCenterLinesCost": 0.0,
         "obstacles": []
     }
 
@@ -51,10 +55,10 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
             scenarioResult["acceleration"].append( (stateList[i+1].velocity - state.velocity) / 0.1)
             scenarioResult["accelerationCost"] += pow( (stateList[i+1].velocity - state.velocity) / 0.1, 2.0)
         scenarioResult["steeringAngle"].append(state.steering_angle)
-        scenarioResult["steeringAngleCost"] += pow(state.steering_angle, 2.0)
+        scenarioResult["steeringAngleCost"] += pow(state.steering_angle/180.0 * math.pi, 2.0)
         if i < len(stateList)-1:
             scenarioResult["steeringRate"].append((stateList[i+1].steering_angle - state.steering_angle) / 0.1 )
-            scenarioResult["steeringRateCost"] += pow((stateList[i+1].steering_angle - state.steering_angle) / 0.1, 2.0)
+            scenarioResult["steeringRateCost"] += pow(((stateList[i+1].steering_angle - state.steering_angle)/180.0 * math.pi) / 0.1, 2.0)
         if i < len(stateList)-1:
             scenarioResult["yawRate"].append((stateList[i+1].orientation - state.orientation) / 0.1 )
             scenarioResult["yawRateCost"] += pow((stateList[i+1].orientation - state.orientation) / 0.1, 2.0)
@@ -69,11 +73,16 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
     for object_list in objectsLists:
         scenarioResult["obstacles"].append(object_list)
 
-    # basic calculation of distance to Obstacles 
-    # TODO: Change for compliance with CommonRoad
+    # calculating the distance to obstacles cost
     for position_index, position in enumerate(scenarioResult["position"]):
+        obstacleDistances = []
         for obstacle in scenarioResult["obstacles"][position_index]:
-            scenarioResult["distanceToObstaclesCost"] += math.sqrt(pow(position[0]-obstacle["position"][0], 2.0) + pow(position[1]-obstacle["position"][1], 2.0))
+            distance = math.sqrt(pow(position[0]-obstacle["position"][0], 2.0) + pow(position[1]-obstacle["position"][1], 2.0))
+            obstacleDistances.append(pow(math.e, -1 * additionalObstacleWeight * distance))
+        maxDistance = max(obstacleDistances)
+        if type(maxDistance) is not float:
+            maxDistance = maxDistance[0]
+        scenarioResult["distanceToObstaclesCost"] += maxDistance
 
     mapStructure = {
         "markers": []
