@@ -75,20 +75,19 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         for obstacle in scenarioResult["obstacles"][position_index]:
             scenarioResult["distanceToObstaclesCost"] += math.sqrt(pow(position[0]-obstacle["position"][0], 2.0) + pow(position[1]-obstacle["position"][1], 2.0))
 
-    
     mapStructure = {
         "markers": []
     }
 
     for marker in centerLinesMarkerArray.markers:
-        markerSerializable = {
-            "type": marker.type,
-            "points": []
-        }
-        for point in marker.points:
-            pointSerializable = [point.x, point.y]
-            markerSerializable["points"].append(pointSerializable)
-        mapStructure["markers"].append(markerSerializable)
+        if marker.ns == "road_network_vector_map" and marker.type == 4:
+            markerSerializable = {
+                "points": []
+            }
+            for point in marker.points:
+                pointSerializable = [point.x, point.y]
+                markerSerializable["points"].append(pointSerializable)
+            mapStructure["markers"].append(markerSerializable)
 
     # FILE OUTPUT SECTION 
     timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -134,7 +133,6 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         f.write(json.dumps(existing_scenario, indent = 4))
         f.close()
 
-    
     # Map storage
     map_filename = reportPath + "/map.js"
     map_f = open(map_filename, "w")
