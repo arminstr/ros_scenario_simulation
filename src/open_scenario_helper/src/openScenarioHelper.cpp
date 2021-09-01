@@ -162,20 +162,29 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                                 }
                             }
 
-                            if(typeid(story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition) == typeid(std::shared_ptr<ReachPositionCondition>))
+                            if(story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition != NULL)
                             {
-                                commonroad::ReachPositionStartTrigger temp_trigger;
-                                temp_trigger.tolerance = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->tolerance.m_double;
-                                temp_trigger.position.point.x = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->x.m_double;
-                                temp_trigger.position.point.y = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->y.m_double;
-                                for(int s = 0; s < story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs.size(); s ++)
+                                if(story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition != NULL)
                                 {
-                                    std::string ref = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs[s]->entityRef.m_string;
-                                    temp_trigger.triggeringEntities.push_back(ref);
+                                    if(story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition != NULL)
+                                    {
+                                        if(story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition != NULL)
+                                        {
+                                            commonroad::ReachPositionStartTrigger temp_trigger;
+                                            temp_trigger.tolerance = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->tolerance.m_double;
+                                            temp_trigger.position.point.x = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->x.m_double;
+                                            temp_trigger.position.point.y = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->y.m_double;
+                                            for(int s = 0; s < story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs.size(); s ++)
+                                            {
+                                                std::string ref = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs[s]->entityRef.m_string;
+                                                temp_trigger.triggeringEntities.push_back(ref);
+                                            }
+                                            temp_trigger.bTriggered = false;
+                                            temp_obstacle.trigger.type = commonroad::TriggerType::REACH_POSITION;
+                                            temp_obstacle.trigger.reachPositionStartTrigger = temp_trigger;
+                                        }
+                                    }
                                 }
-                                temp_trigger.bTriggered = false;
-                                temp_obstacle.trigger.type = commonroad::TriggerType::REACH_POSITION;
-                                temp_obstacle.trigger.reachPositionStartTrigger = temp_trigger;
                             }
                         }
                     }
@@ -186,7 +195,7 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
         }
     }
     // Parse Sim End Time
-    if(typeid(story.m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByValueCondition->m_ByValueCondition->m_SimulationTimeCondition) == typeid(std::shared_ptr<SimulationTimeCondition>))
+    if(story.m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByValueCondition->m_ByValueCondition->m_SimulationTimeCondition != NULL)
     {
         cr.planningProblem.goalState.time.intervalEnd = (int) (story.m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByValueCondition->m_ByValueCondition->m_SimulationTimeCondition->value.m_double * 10.0);
     }
