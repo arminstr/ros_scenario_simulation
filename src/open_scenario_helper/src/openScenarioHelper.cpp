@@ -103,6 +103,8 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                     }
                 }
 
+                temp_obstacle.trigger.type = commonroad::TriggerType::UNDEFINED;
+
                 // // now get the objects trajectory
                 std::vector<std::shared_ptr<Vertex>> vertices;
                 for (int l = 0; l < story.m_Storys.size(); l++)
@@ -158,6 +160,22 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                                         temp_obstacle.trajectory.push_back(state);
                                     }
                                 }
+                            }
+
+                            if(typeid(story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition) == typeid(std::shared_ptr<ReachPositionCondition>))
+                            {
+                                commonroad::ReachPositionStartTrigger temp_trigger;
+                                temp_trigger.tolerance = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->tolerance.m_double;
+                                temp_trigger.position.point.x = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->x.m_double;
+                                temp_trigger.position.point.y = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_EntityCondition->m_EntityCondition->m_ReachPositionCondition->m_Position->m_Position->m_WorldPosition->y.m_double;
+                                for(int s = 0; s < story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs.size(); s ++)
+                                {
+                                    std::string ref = story.m_Storys[l]->m_Acts[m]->m_StartTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByEntityCondition->m_TriggeringEntities->m_EntityRefs[s]->entityRef.m_string;
+                                    temp_trigger.triggeringEntities.push_back(ref);
+                                }
+                                temp_trigger.bTriggered = false;
+                                temp_obstacle.trigger.type = commonroad::TriggerType::REACH_POSITION;
+                                temp_obstacle.trigger.reachPositionStartTrigger = temp_trigger;
                             }
                         }
                     }
