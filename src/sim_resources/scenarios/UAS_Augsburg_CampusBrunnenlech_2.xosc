@@ -33,7 +33,7 @@
                 <ParameterDeclarations/>
                 <BoundingBox>
                     <Center x="2.0" y="0" z="0.9"/>
-                    <Dimensions height="1.8" length="5" width="2"/>
+                    <Dimensions height="1.8" length="0.75" width="0.75"/>
                 </BoundingBox>
                 <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
                 <Axles>
@@ -51,7 +51,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <WorldPosition x="-100.4486465454" y="208.487365723" h="0.7" />
+                                <WorldPosition x="-162.017120361" y="162.847366333" h="2.1" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -60,7 +60,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <WorldPosition x="-75.4486465454" y="235.48736572" h="3.84" />
+                                <WorldPosition x="-106.4486465454" y="216.487365723" h="2.00" />
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -69,7 +69,7 @@
                           <SpeedAction>
                             <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
                             <SpeedActionTarget>
-                              <AbsoluteTargetSpeed value="2.0"/>
+                              <AbsoluteTargetSpeed value="1.5"/>
                             </SpeedActionTarget>
                           </SpeedAction>
                         </LongitudinalAction>
@@ -134,17 +134,12 @@
                                                     <Polyline>
                                                         <Vertex>
                                                             <Position>
-                                                                <WorldPosition x="-75.4486465454" y="235.48736572" h="3.84" />
+                                                                <WorldPosition x="-106.4486465454" y="216.487365723" h="2.00" />
                                                             </Position>
                                                         </Vertex>
                                                         <Vertex>
                                                             <Position>
-                                                                <WorldPosition x="-107.4486465454" y="210.487365723"  h="3.84"/>
-                                                            </Position>
-                                                        </Vertex>
-                                                        <Vertex>
-                                                            <Position>
-                                                                <WorldPosition x="-139.4486465454" y="185.487365723"  h="3.84"/>
+                                                                <WorldPosition x="-100.4486465454" y="202.487365723" h="2.00" />
                                                             </Position>
                                                         </Vertex>
                                                     </Polyline>
@@ -165,9 +160,9 @@
                                 <EntityRef entityRef="Ego"/>
                             </TriggeringEntities>
                             <EntityCondition>
-                                <ReachPositionCondition tolerance="5.0">
+                                <ReachPositionCondition tolerance="15.0">
                                     <Position>
-                                        <WorldPosition x="-107.4486465454" y="210.487365723"/>
+                                        <WorldPosition x="-110.4486465454" y="207.487365723"/>
                                     </Position>
                                 </ReachPositionCondition>
                             </EntityCondition>
@@ -181,7 +176,7 @@
             <ConditionGroup>
               <Condition delay="0.0" conditionEdge="rising" name="Time limit">
                 <ByValueCondition>
-                  <SimulationTimeCondition rule="greaterThan" value="5.0"/>
+                  <SimulationTimeCondition rule="greaterThan" value="60.0"/>
                 </ByValueCondition>
               </Condition>
             </ConditionGroup>

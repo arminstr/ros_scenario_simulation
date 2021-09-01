@@ -104,9 +104,11 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         for obstacle in scenarioResult["obstacles"][position_index]:
             distance = math.sqrt(pow(position[0]-obstacle["position"][0], 2.0) + pow(position[1]-obstacle["position"][1], 2.0))
             obstacleDistances.append(pow(math.e, -1 * additionalObstacleWeight * distance))
-        maxDistance = max(obstacleDistances)
-        if type(maxDistance) is not float:
-            maxDistance = maxDistance[0]
+        maxDistance = 0.0
+        if len(obstacleDistances) > 0:
+            maxDistance = max(obstacleDistances)
+            if type(maxDistance) is not float:
+                maxDistance = maxDistance[0]
         scenarioResult["distanceToObstaclesCost"] += maxDistance
 
     mapStructure = {

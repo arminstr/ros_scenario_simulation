@@ -27,6 +27,13 @@ enum class ObstacleGeometry : unsigned int
   CIRCLE
 };
 
+enum class TriggerType : unsigned int
+{
+  REACH_POSITION,
+  TIME,
+  UNDEFINED
+};
+
 struct Orientation
 {
   double exact;
@@ -75,6 +82,28 @@ struct ObstacleShape
   double width;
 };
 
+struct SimulationTimeStartTrigger
+{
+  Time time;
+  bool bTriggered;
+};
+
+struct ReachPositionStartTrigger
+{
+  Position position;
+  std::vector<std::string> triggeringEntities;
+  double tolerance;
+  Time triggerMoment;
+  bool bTriggered;
+};
+
+struct StartTrigger
+{
+  TriggerType type;
+  SimulationTimeStartTrigger simulationTimeStartTrigger;
+  ReachPositionStartTrigger reachPositionStartTrigger;
+};
+
 struct ObstacleState
 {
   Position position;
@@ -83,6 +112,7 @@ struct ObstacleState
   Velocity velocity;
   Acceleration acceleration;
 };
+
 struct ObstacleInitialState : public ObstacleState{};
 
 struct ProblemState
@@ -124,6 +154,7 @@ struct ObstacleInformation
   ObstacleType type;
   ObstacleShape shape;
   ObstacleInitialState initialState;
+  StartTrigger trigger;
 
   std::vector<ObstacleState> trajectory;
 };

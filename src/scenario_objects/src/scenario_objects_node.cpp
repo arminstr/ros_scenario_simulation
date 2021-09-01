@@ -21,14 +21,17 @@ geometry_msgs::PoseStamped getGoalPoseFromLaneletId(commonroad::CommonRoadData& 
 void getAutowareObjectsFromCommonRoad(autoware_msgs::DetectedObjectArray& objArray, commonroad::CommonRoadData& cR, int tC);
 geometry_msgs::Point32 rotate_point(float cx,float cy,float angle,geometry_msgs::Point32 p);
 autoware_msgs::DetectedObject get_object_from_state(const commonroad::ObstacleInformation* obstacle, commonroad::ObstacleState* state, int id);
+void callbackCurrentPose(const geometry_msgs::PoseStamped &msg);
 
 double noiseMargin = 0.1; // 0.1 Meters max
+geometry_msgs::PoseStamped current_pose;
 
 int main( int argc, char** argv )
 {
   ros::init(argc, argv, "commonroad_objects");
   ros::NodeHandle n;
   ros::Publisher autoware_object_pub = n.advertise<autoware_msgs::DetectedObjectArray>("/simulated/objects", 10);
+  ros::Subscriber sub_current_pose = n.subscribe("/current_pose", 10, callbackCurrentPose);
   ros::Rate r(10);
   ros::NodeHandle nh;
 
@@ -78,17 +81,33 @@ int main( int argc, char** argv )
   }
 }
 
+void callbackCurrentPose(const geometry_msgs::PoseStamped &msg)
+{
+  current_pose = msg;
+}
+
 void getAutowareObjectsFromCommonRoad(autoware_msgs::DetectedObjectArray& objArray, commonroad::CommonRoadData& cR, int tC)
 {
   bool bNoise = true;
   int id = 0;
-  for(const commonroad::ObstacleInformation & obstacle : cR.obstacles)
+  for(commonroad::ObstacleInformation & obstacle : cR.obstacles)
   {
     commonroad::ObstacleState state;
     /* code for publishing autoware object */
     autoware_msgs::DetectedObject obj;
+
+    // Handle static obstacles
+    if(obstacle.trajectory.size() == 0) 
+    {
+      state = obstacle.initialState;
+      obj = get_object_from_state(&obstacle, &state, id);
+      if (obj.pose.position.x >= 0.0001 || obj.pose.position.x <= -0.0001){
+          objArray.objects.push_back(obj);
+      }
+    }
     
-    if(obstacle.trajectory.size() > 0) 
+    // Handle obstacles without trigger
+    if(obstacle.trajectory.size() > 0 && obstacle.trigger.type == commonroad::TriggerType::UNDEFINED) 
     {
       // check if it's the first frame -> get initial state
       if(tC <= 0)
@@ -110,11 +129,36 @@ void getAutowareObjectsFromCommonRoad(autoware_msgs::DetectedObjectArray& objArr
       if (obj.pose.position.x >= 0.0001 || obj.pose.position.x <= -0.0001){
           objArray.objects.push_back(obj);
       }
-    } 
-    if(obstacle.trajectory.size() == 0) 
+    }
+    
+    // Handle triggered obstacles
+    if(obstacle.trajectory.size() > 0 && obstacle.trigger.type == commonroad::TriggerType::REACH_POSITION) 
     {
-      state = obstacle.initialState;
-      obj = get_object_from_state(&obstacle, &state, id);
+      // check distance between obstacle's trigger and current_pose
+      double distance = sqrt(pow(current_pose.pose.position.x - obstacle.trigger.reachPositionStartTrigger.position.point.x, 2.0) + pow(current_pose.pose.position.y - obstacle.trigger.reachPositionStartTrigger.position.point.y, 2.0));
+      if(tC > 0 && distance < obstacle.trigger.reachPositionStartTrigger.tolerance && obstacle.trigger.reachPositionStartTrigger.bTriggered == false)
+      {
+        obstacle.trigger.reachPositionStartTrigger.bTriggered = true;
+        obstacle.trigger.reachPositionStartTrigger.triggerMoment.exact = tC;
+      }
+      // check if it's the first frame -> get initial state
+      if(tC <= 0 || obstacle.trigger.reachPositionStartTrigger.bTriggered == false)
+      {
+        state = obstacle.initialState;
+      }
+      if(tC > obstacle.trigger.reachPositionStartTrigger.triggerMoment.exact && obstacle.trigger.reachPositionStartTrigger.bTriggered == true)
+      {
+        int timeOffset = tC - obstacle.trigger.reachPositionStartTrigger.triggerMoment.exact;
+        if(timeOffset < obstacle.trajectory.size())
+        {
+          state = obstacle.trajectory[timeOffset];
+        }
+        if(timeOffset >= obstacle.trajectory.size())
+        {
+          state = obstacle.trajectory[obstacle.trajectory.size()-1];
+        }
+      }
+      obj = get_object_from_state(&obstacle, &state, id);      
       if (obj.pose.position.x >= 0.0001 || obj.pose.position.x <= -0.0001){
           objArray.objects.push_back(obj);
       }
