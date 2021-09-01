@@ -6,9 +6,11 @@ import numpy as np
 import os
 import pathlib
 import matplotlib.pyplot as plt
-from std_msgs.msg import Int32
-from visualization_msgs.msg import MarkerArray
+from reportGenerator import generateReport
+from std_msgs.msg import Int32, String
 from geometry_msgs.msg import PoseStamped, TwistStamped
+from autoware_msgs.msg import VehicleCmd, DetectedObjectArray
+from visualization_msgs.msg import MarkerArray
 from commonroad.geometry.shape import Rectangle
 from commonroad.scenario.obstacle import DynamicObstacle, ObstacleType
 from commonroad.scenario.trajectory import Trajectory,State
@@ -19,10 +21,14 @@ from vehiclemodels import parameters_vehicle3
 from commonroad.common.file_reader import CommonRoadFileReader
 from commonroad.common.solution import CommonRoadSolutionWriter, Solution, PlanningProblemSolution, VehicleModel, VehicleType, CostFunction
 
+# constant parameters
+max_steering_angle_deg = 60.0 
 
 # generate state list of the ego vehicle's trajectory
 state_list = []
+objects_lists = []
 file_path = ''
+report_path = ''
 
 currentTimeStep = -50
 lastTimeStep = 0
@@ -30,38 +36,48 @@ currentPosition = np.array([0,0])
 currentVelocityX = 0.0
 currentVelocityY = 0.0
 currentYaw = 0.0
+currentSteeringAngle = 0.0
+globalGoal = 0
+detectedObjectArray = 0
+centerLinesMarkerArray = 0
 
-bSimulationFinished = False
 
-def euler_from_quaternion(x, y, z, w):
+def yaw_from_quaternion(x, y, z, w):
         """
-        Convert a quaternion into euler angles (roll, pitch, yaw)
-        roll is rotation around x in radians (counterclockwise)
-        pitch is rotation around y in radians (counterclockwise)
+        Convert a quaternion into yaw
         yaw is rotation around z in radians (counterclockwise)
         """
-        t0 = +2.0 * (w * x + y * z)
-        t1 = +1.0 - 2.0 * (x * x + y * y)
-        roll_x = math.atan2(t0, t1)
-     
-        t2 = +2.0 * (w * y - z * x)
-        t2 = +1.0 if t2 > +1.0 else t2
-        t2 = -1.0 if t2 < -1.0 else t2
-        pitch_y = math.asin(t2)
      
         t3 = +2.0 * (w * z + x * y)
         t4 = +1.0 - 2.0 * (y * y + z * z)
         yaw_z = math.atan2(t3, t4)
      
-        return roll_x, pitch_y, yaw_z # in radians
+        return yaw_z # in radians
+
+def goalCallback(goal):
+    global globalGoal
+    globalGoal = goal.pose
+
+def calcDist(x1,y1,x2,y2):
+    distance = math.sqrt(math.pow((x2 - x1),2) + math.pow((y2 - y1),2))
+    return distance
 
 def poseCallback(poseS):
     global currentPosition
     currentPosition = np.array([poseS.pose.position.x,poseS.pose.position.y])
     q = poseS.pose.orientation
-    roll, pitch, yaw = euler_from_quaternion(q.x, q.y, q.z, q.w)
+    yaw = yaw_from_quaternion(q.x, q.y, q.z, q.w)
     global currentYaw
     currentYaw = yaw
+    # Check distance to goal
+    if globalGoal == 0: return
+    distance = calcDist(poseS.pose.position.x, poseS.pose.position.y, globalGoal.position.x, globalGoal.position.y)
+    if distance < 5.0:
+        simFinished()
+
+def simFinished():
+    generateReport(state_list, objects_lists, centerLinesMarkerArray, report_path, file_path)
+    rospy.signal_shutdown("Evaluation Finsihed")
 
 def velocityCallback(twistS):
     global currentVelocityX
@@ -73,16 +89,21 @@ def timeCallback(timeStep):
     global currentTimeStep
     currentTimeStep = int(timeStep.data)
 
-def behaviorCallback(behavior):
-    global currentBehavior
-    global bSimulationFinished
-    global simWaitTimer
-    currentBehavior = behavior.markers[0].text
-    if "End" in currentBehavior:
-        bSimulationFinished = True
-        simWaitTimer = 0
-        rospy.loginfo("***************** End Detected in Evaluator ********************")
-        rospy.loginfo(" %s", currentBehavior)
+def vehicleCmdCallback(cmd):
+    global currentSteeringAngle
+    currentSteeringAngle = max_steering_angle_deg * cmd.steer_cmd.steer / 100.0
+
+def endCallback(endState):
+    if endState.data == "StopTrigger":
+        simFinished()
+
+def objectListCallback(msg):
+    global detectedObjectArray
+    detectedObjectArray = msg
+
+def centerLinesCallback(msg):
+    global centerLinesMarkerArray
+    centerLinesMarkerArray = msg
 
 def finish():
     global state_list
@@ -139,33 +160,44 @@ def finish():
 def evaluator():
     global lastTimeStep
     global file_path
-    global bSimulationFinished
+    global report_path
+    global detectedObjectArray
     rospy.init_node('evaluator', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     rospy.Subscriber("/current_pose", PoseStamped, poseCallback)
     rospy.Subscriber("/current_velocity", TwistStamped, velocityCallback)
     rospy.Subscriber("/sim_timestep", Int32, timeCallback)
-    rospy.Subscriber("/behavior_state", MarkerArray, behaviorCallback)
+    rospy.Subscriber("/move_base_simple/goal", PoseStamped, goalCallback)
+    rospy.Subscriber("/op_controller_cmd", VehicleCmd, vehicleCmdCallback)
+    rospy.Subscriber("/sim/end_state", String, endCallback)
+    rospy.Subscriber("/simulated/objects", DetectedObjectArray, objectListCallback)
+    rospy.Subscriber("/vector_map_center_lines_rviz", MarkerArray, centerLinesCallback)
 
-    file_path = rospy.get_param("/pathToCommonRoad")
+    file_path = rospy.get_param("/pathToScenario")
+    report_path = rospy.get_param("/pathForReport")
     rospy.loginfo("%s", file_path)
     
     while not rospy.is_shutdown():
-        if lastTimeStep == currentTimeStep:
-            if currentTimeStep >= 0 and bSimulationFinished:
-                bSimulationFinished = True
-                finish()
-        
         if lastTimeStep != currentTimeStep:
             if currentTimeStep >= 0:
-                s = State(position=currentPosition, velocity=currentVelocityX, velocity_y=currentVelocityY, orientation=currentYaw, time_step=currentTimeStep)
+                s = State(position=currentPosition, velocity=math.sqrt(math.pow(currentVelocityX,2) + math.pow(currentVelocityY,2)), orientation=currentYaw, steering_angle=currentSteeringAngle, time_step=currentTimeStep)
                 state_list.append(s)
-                # rospy.loginfo("*** Summary of current state ***")
-                # rospy.loginfo("%s", state_list[currentTimeStep])
+
+                objects = []
+                for msg_obj in detectedObjectArray.objects:
+                    obj_dict = {
+                        "position": [msg_obj.pose.position.x, msg_obj.pose.position.y],
+                        "dimension": [msg_obj.dimensions.x, msg_obj.dimensions.y],
+                        "orientation": [msg_obj.pose.orientation.x, msg_obj.pose.orientation.y, msg_obj.pose.orientation.z, msg_obj.pose.orientation.w]
+                    }
+                    objects.append(obj_dict)
+                objects_lists.append(objects)
+
             lastTimeStep = currentTimeStep
         
         rate.sleep()
     rospy.spin()
+    
 
 if __name__ == '__main__':
     try:

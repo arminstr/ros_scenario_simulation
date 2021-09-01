@@ -69,7 +69,7 @@
 
 	
 	<arg name="additionalBrakingDistance" 	default="0.0"  />
-	<arg name="goalDiscoveryDistance" 		default="10.0"  />
+	<arg name="goalDiscoveryDistance" 		default="4.0"  />
 	
 	<arg name="giveUpDistance" 				default="-1.0"  /> <!-- Margin of error for the stopline - allow braking after to stopline -> can't go further than -4 -->
 			

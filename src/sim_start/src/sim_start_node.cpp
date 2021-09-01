@@ -36,7 +36,8 @@ int main( int argc, char** argv )
     std::string pathCR;
     nh.getParam("/pathToScenario", pathCR);
 
-    std::cout << pathCR << std::endl;
+    std::string pathReport;
+    nh.getParam("/pathForReport", pathReport);
 
     // std::string fileXODR;
     // fileXODR = fileCR.substr(0, fileCR.find_last_of(".")) + ".xodr";
@@ -59,22 +60,12 @@ int main( int argc, char** argv )
                 break;
 
             case 20:
-                str_cmd = "roslaunch scenario_sim scenario_sim.launch pathToScenario:=" + pathCR +  " &";  
+                str_cmd = "roslaunch scenario_sim scenario_sim.launch pathToScenario:=" + pathCR + " pathForReport:=" + pathReport + " &";  
                 // Convert string to const char * as system requires 
                 command = str_cmd.c_str(); 
                 ROS_INFO("*** Starting Simulation ***");
                 ROS_INFO(command);
                 system(command);
-                break;
-            
-            default:
-                if( behaviorState == 12)
-                {
-                    ROS_INFO("*** Stop State detected ***");
-                    system("rosnode kill sim");
-                    system("rosnode kill rviz");
-                    ros::shutdown();
-                }
                 break;
         }
 

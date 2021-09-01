@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pathlib
 import matplotlib.pyplot as plt
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, String
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from visualization_msgs.msg import MarkerArray
 from autoware_msgs.msg import Waypoint
@@ -33,14 +33,12 @@ currentVelocityY = 0.0
 currentYaw = 0.0
 bSimulationFinished = True
 simWaitTimer = 0
-simWaitLimit = 5
+simWaitLimit = 10
 globalGoal = 0
 
-
-
 def calcDist(x1,y1,x2,y2):
-     distance = math.sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1))
-     return distance
+    distance = math.sqrt(math.pow((x2 - x1),2) + math.pow((y2 - y1),2))
+    return distance
 
 def simFinished():
     global bSimulationFinished
@@ -59,10 +57,13 @@ def goalCallback(goal):
 
 def poseCallback(currentPose):
     if globalGoal == 0: return
-    pose = currentPose.pose
     # Check distance to goal
-    distance = calcDist(pose.position.x, pose.position.y,globalGoal.position.x, globalGoal.position.y)
+    distance = calcDist(currentPose.pose.position.x, currentPose.pose.position.y, globalGoal.position.x, globalGoal.position.y)
     if distance != 0 and distance < 5.0:
+        simFinished()
+
+def endCallback(endState):
+    if endState.data == "StopTrigger":
         simFinished()
 
 def sim_run():
@@ -76,8 +77,12 @@ def sim_run():
     rospy.Subscriber("/current_pose", PoseStamped, poseCallback)
     rospy.Subscriber("/move_base_simple/goal", PoseStamped, goalCallback)
     rospy.Subscriber("/sim_timestep", Int32, timeCallback)
+    rospy.Subscriber("/sim/end_state", String, endCallback)
 
     file_path = rospy.get_param("/pathToScenario")
+    report_path = rospy.get_param("/pathForReport")
+    if os.path.exists(report_path + "/scenario.json"):
+        os.remove(report_path + "/scenario.json")
 
     fileList = []
     for _, _, files in os.walk(file_path):
@@ -90,14 +95,14 @@ def sim_run():
     while not rospy.is_shutdown():
         if bSimulationFinished:
             simWaitTimer += 1
-        if bSimulationFinished and simWaitTimer < simWaitLimit:
+        if bSimulationFinished and simWaitTimer >= simWaitLimit:
             topicname = os.popen("rosnode list | grep sim_core").readlines()
             if topicname == ['/sim_core\n']:
                 print("killing simulation")
                 os.system("rosnode kill sim_core")
                 rospy.loginfo("*** Simulation Files in Queue: %d", len(fileList))
-        if bSimulationFinished and len(fileList) > 0 and simWaitTimer >= simWaitLimit:
-            strCommand = 'roslaunch sim_start sim.launch pathToScenario:=' + file_path + '/' + fileList[0] + ' &'
+        if bSimulationFinished and len(fileList) > 0 and simWaitTimer >= simWaitLimit*2:
+            strCommand = 'roslaunch sim_start sim.launch pathToScenario:=' + file_path + '/' + fileList[0] + ' pathForReport:=' + report_path +  ' &'
             rospy.loginfo("launching: %s", strCommand)
             fileList.pop(0)
             bSimulationFinished = False

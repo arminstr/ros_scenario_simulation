@@ -1,8 +1,11 @@
 
 <launch>
-  <arg name="pathToCommonRoad" default="/media/psf/Home/CloudStation/06_hochschule/02_MAPR/02_code/lanelet2opendrive/commonRoadScenarios/DEU_Muc-7_1_T-1.xml" />
+  <arg name="pathToScenario"/>
+  <arg name="pathForReport"/>
+  
  
-  <param name="pathToCommonRoad" value="$(arg pathToCommonRoad)"/>
+  <param name="pathToScenario" value="$(arg pathToScenario)"/>
+  <param name="pathForReport" value="$(arg pathForReport)"/>
   <!-- topic interface -->
-  <node pkg="scenario_evaluator" type="evaluator.py" name="evaluator" output="screen" required="true"/>
+  <node pkg="scenario_evaluator" type="evaluator.py" name="sim_evaluator" output="screen" required="true"/>
 </launch>

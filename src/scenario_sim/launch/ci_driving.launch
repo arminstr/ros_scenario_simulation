@@ -16,7 +16,7 @@
 
   <!-- Motion Planning -->
   <include file="$(find scenario_sim)/launch/motion_planning.launch">
-    <arg name="steerAngleGainKP" 			default="0.7"/>
+    <arg name="steerAngleGainKP" 			default="1.5"/>
     <arg name="steerAngleGainKI" 			default="0.01"/>
 
     <arg name="accelGainKP" 				default="200"/>
@@ -28,6 +28,6 @@
     <arg name="brakeGainKD" 				default="0.0"/> 
   </include>
 
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find scenario_sim)/config/op_viz.rviz" />
+  <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find scenario_sim)/config/op_viz.rviz" /> -->
 
 </launch>

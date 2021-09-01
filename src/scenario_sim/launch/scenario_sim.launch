@@ -1,16 +1,26 @@
 <launch>
     <arg name="pathToScenario"/>
     <arg name="pathToOpenDrive" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/map/campus-hsa.xodr"/>
-    
+    <arg name="pathForReport"/>
+  
+
+    <param name="pathForReport" value="$(arg pathForReport)"/>
     <param name="pathToScenario" value="$(arg pathToScenario)"/>
     <param name="pathToOpenDrive" value="$(arg pathToOpenDrive)"/>
     
     <!-- topic interface -->
+    <include file="$(find scenario_evaluator)/launch/evaluator.launch">
+        <arg name="pathToScenario" value="$(arg pathToScenario)"/>
+        <arg name="pathForReport" value="$(arg pathForReport)"/>
+    </include>
+
     <node pkg="scenario_sim" type="scenario_sim_node" name="sim_core" output="screen" required="true"/>
 
     <include file="$(find scenario_objects)/launch/scenario_objects.launch">
         <arg name="pathToScenario" value="$(arg pathToScenario)"/>
     </include>
+
+    
 
     <include file="$(find scenario_goal)/launch/scenario_goal.launch"/>
 

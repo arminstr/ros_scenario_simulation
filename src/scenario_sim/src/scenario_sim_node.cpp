@@ -4,6 +4,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <ros/ros.h>
@@ -22,10 +23,11 @@ visualization_msgs::Marker getMarkerFromStampedPose(geometry_msgs::PoseStamped g
 void modelStep(commonroad::CommonRoadData &cR, int timeStep);
 geometry_msgs::TwistStamped getCurrentVelocityVehicleModel(commonroad::CommonRoadData &cR, geometry_msgs::PoseStamped cP, geometry_msgs::PoseStamped lP, int timeStep);
 void callbackVehicleCommand(const autoware_msgs::VehicleCmd &msg);
+int getStopStateFromScenario(commonroad::CommonRoadData &cR);
 
 double max_accel = 5;   // m / s^2
 double max_brake = -10; // m / s^2
-double max_steering_angle = 70.0 / 180.0 * M_PI;
+double max_steering_angle = 60.0 / 180.0 * M_PI;
 autoware_msgs::VehicleCmd current_cmd;
 geometry_msgs::PoseStamped current_pose;
 geometry_msgs::TwistStamped current_velocity_base_link;
@@ -40,6 +42,8 @@ double vehicleLength = 2.8;
 
 double lastSpeed = 0.0;
 
+int maxTimeSteps = 600;
+
 
 int main(int argc, char **argv)
 {
@@ -50,6 +54,7 @@ int main(int argc, char **argv)
   ros::Publisher current_timestep_pub = n.advertise<std_msgs::Int32>("/sim_timestep", 10);
 
   ros::Publisher current_pose_marker_pub = n.advertise<visualization_msgs::Marker>("/sim_visu/current_pose_marker", 10);
+  ros::Publisher end_state_pub = n.advertise<std_msgs::String>("/sim/end_state", 10);
   ros::Subscriber sub_vehicle_cmd = n.subscribe("/op_controller_cmd", 10, callbackVehicleCommand);
   ros::Rate r(1 / dT);
 
@@ -80,6 +85,8 @@ int main(int argc, char **argv)
   int timeCounter = -50;
   geometry_msgs::PoseStamped lastPose;
 
+  int endTimeStep = getStopStateFromScenario(cr);
+
   while (ros::ok())
   {
     modelStep(cr, timeCounter);
@@ -94,6 +101,13 @@ int main(int argc, char **argv)
     visualization_msgs::Marker currentPoseMarker;
     currentPoseMarker = getMarkerFromStampedPose(current_pose);
     current_pose_marker_pub.publish(currentPoseMarker);
+
+    if (timeCounter > endTimeStep)
+    {
+      std_msgs::String end_msg;
+      end_msg.data = "StopTrigger";
+      end_state_pub.publish(end_msg);
+    }
 
     timeCounter++;
     ros::spinOnce();
@@ -191,6 +205,21 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
     current_pose.pose.orientation.z = q[2];
     current_pose.pose.orientation.w = q[3];
   }
+}
+
+int getStopStateFromScenario(commonroad::CommonRoadData &cR)
+{
+  int finalTimeStep = 0;
+  if(cR.planningProblem.goalState.time.intervalEnd != 0)
+  {
+    finalTimeStep = cR.planningProblem.goalState.time.intervalEnd; 
+  }
+  else 
+  {
+    finalTimeStep = maxTimeSteps;
+  }
+  
+  return finalTimeStep;
 }
 
 visualization_msgs::Marker getMarkerFromStampedPose(geometry_msgs::PoseStamped gP)

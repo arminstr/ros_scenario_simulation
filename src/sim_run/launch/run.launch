@@ -1,8 +1,10 @@
 
 <launch>
   <arg name="pathToScenario" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/scenarios"/>
+  <arg name="pathForReport" default="$(env HOME)/ros_scenario_simulation/reports"/>
  
   <param name="pathToScenario" value="$(arg pathToScenario)"/>
+  <param name="pathForReport" value="$(arg pathForReport)"/>
   <!-- topic interface -->
   <node pkg="sim_run" type="sim_run.py" name="sim_run" output="screen"/>
 </launch>

@@ -166,6 +166,12 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
             }
         }
     }
+    // Parse Sim End Time
+    if(typeid(story.m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByValueCondition->m_ByValueCondition->m_SimulationTimeCondition) == typeid(std::shared_ptr<SimulationTimeCondition>))
+    {
+        cr.planningProblem.goalState.time.intervalEnd = (int) (story.m_StopTrigger->m_ConditionGroups[0]->m_Conditions[0]->m_Condition->m_ByValueCondition->m_ByValueCondition->m_SimulationTimeCondition->value.m_double * 10.0);
+    }
+    
     return bSuccess;
 }
 
