@@ -17,6 +17,7 @@ zoomOutButton.addEventListener("click", (event) => {
     meterToPixelFactor *= 0.9;
 });
 
+var timeCostTD = document.getElementById("timeCost");
 var pathLengthCostTD = document.getElementById("pathLengthCost");
 var accelerationCostTD = document.getElementById("accelerationCost");
 var jerkCostTD = document.getElementById("jerkCost");
@@ -27,6 +28,16 @@ var dTObstaclesCostTD = document.getElementById("dTObstaclesCost");
 var dTCenterLineCostTD = document.getElementById("dTCenterLineCost");
 var costSumTD = document.getElementById("costSum");
 
+var timeWeightedCostTD = document.getElementById("timeWeightedCost");
+var pathLengthWeightedCostTD = document.getElementById("pathLengthWeightedCost");
+var accelerationWeightedCostTD = document.getElementById("accelerationWeightedCost");
+var jerkWeightedCostTD = document.getElementById("jerkWeightedCost");
+var steeringAngleWeightedCostTD = document.getElementById("steeringAngleWeightedCost");
+var steeringRateWeightedCostTD = document.getElementById("steeringRateWeightedCost");
+var yawRateWeightedCostTD = document.getElementById("yawRateWeightedCost");
+var dTObstaclesWeightedCostTD = document.getElementById("dTObstaclesWeightedCost");
+var dTCenterLineWeightedCostTD = document.getElementById("dTCenterLineWeightedCost");
+var costSumWeightedTD = document.getElementById("costSumWeighted");
 
 const fileSelector = document.getElementById('file-selector');
   fileSelector.addEventListener('change', (event) => {
@@ -57,7 +68,7 @@ function readScenarioJson(file)
 
 function fillCostTable(scenario) 
 {
-    
+    timeCostTD.innerHTML = (Math.round(scenario["time"] * 100) / 100).toFixed(2);
     pathLengthCostTD.innerHTML = (Math.round(scenario["pathLength"] * 100) / 100).toFixed(2);
     accelerationCostTD.innerHTML = (Math.round(scenario["accelerationCost"] * 100) / 100).toFixed(2);
     jerkCostTD.innerHTML = (Math.round(scenario["jerkCost"] * 100) / 100).toFixed(2);
@@ -66,9 +77,18 @@ function fillCostTable(scenario)
     yawRateCostTD.innerHTML = (Math.round(scenario["yawRateCost"] * 100) / 100).toFixed(2);
     dTObstaclesCostTD.innerHTML = (Math.round(scenario["distanceToObstaclesCost"] * 100) / 100).toFixed(2);
     dTCenterLineCostTD.innerHTML = (Math.round(scenario["distanceToCenterLinesCost"] * 100) / 100).toFixed(2);
-    var costSum = scenario["pathLength"] + scenario["accelerationCost"] + scenario["jerkCost"] + scenario["steeringAngleCost"] + 
-        scenario["steeringRateCost"] + scenario["yawRateCost"] + scenario["distanceToObstaclesCost"] + scenario["distanceToCenterLinesCost"];
-    costSumTD.innerHTML = (Math.round(costSum * 100) / 100).toFixed(2);
+    costSumTD.innerHTML = (Math.round(scenario["costSum"] * 100) / 100).toFixed(2);
+
+    timeWeightedCostTD.innerHTML = (Math.round(scenario["timeWeighted"] * 100) / 100).toFixed(2);
+    pathLengthWeightedCostTD.innerHTML = (Math.round(scenario["pathLengthWeighted"] * 100) / 100).toFixed(2);
+    accelerationWeightedCostTD.innerHTML = (Math.round(scenario["accelerationCostWeighted"] * 100) / 100).toFixed(2);
+    jerkWeightedCostTD.innerHTML = (Math.round(scenario["jerkCostWeighted"] * 100) / 100).toFixed(2);
+    steeringAngleWeightedCostTD.innerHTML = (Math.round(scenario["steeringAngleCostWeighted"] * 100) / 100).toFixed(2);
+    steeringRateWeightedCostTD.innerHTML = (Math.round(scenario["steeringRateCostWeighted"] * 100) / 100).toFixed(2);
+    yawRateWeightedCostTD.innerHTML = (Math.round(scenario["yawRateCostWeighted"] * 100) / 100).toFixed(2);
+    dTObstaclesWeightedCostTD.innerHTML = (Math.round(scenario["distanceToObstaclesCostWeighted"] * 100) / 100).toFixed(2);
+    dTCenterLineWeightedCostTD.innerHTML = (Math.round(scenario["distanceToCenterLinesCostWeighted"] * 100) / 100).toFixed(2);
+    costSumWeightedTD.innerHTML = (Math.round(scenario["costSumWeighted"] * 100) / 100).toFixed(2);
 }
 
 function startVideo(scenario){
