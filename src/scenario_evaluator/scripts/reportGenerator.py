@@ -8,6 +8,20 @@ import math
 # decreasing this factor increases the influence of close obstacles
 additionalObstacleWeight = 0.1 
 
+# weights for individual cost metrics
+timeWeight = 1.0
+pathLengthWeight = 1.0
+accelerationWeight = 1.0
+jerkWeight = 0.1
+steeringAngleWeight = 1.0
+steeringRateWeight = 1.0
+yawRateWeight = 1.0
+distanceToObstaclesWeight = 10.0
+distanceToCenterLinesWeight = 1.0
+
+def calcDistance(p0, p1):
+    return math.sqrt(math.pow(p0[0]-p1[0], 2.0)+math.pow(p0[1]-p1[1], 2.0))
+
 def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path):
     _, scenarioName = os.path.split(file_path)
     scenarioName, _ = os.path.splitext(scenarioName)
@@ -19,7 +33,9 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
     scenarioResult = {
         "name": "",
         "pathLength": 0.0,
+        "pathLengthWeighted": 0.0,
         "time": 0.0,
+        "timeWeighted": 0.0,
         "dimension": [],
         "timeSteps": [],
         "position": [],
@@ -27,17 +43,26 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         "velocity":[],
         "acceleration": [],
         "accelerationCost": 0.0,
+        "accelerationCostWeighted": 0.0,
         "jerk": [],
         "jerkCost": 0.0,
+        "jerkCostWeighted": 0.0,
         "steeringAngle": [],
         "steeringAngleCost": 0.0,
+        "steeringAngleCostWeighted": 0.0,
         "steeringRate": [],
         "steeringRateCost": 0.0,
+        "steeringRateCostWeighted": 0.0,
         "yawRate": [],
         "yawRateCost": 0.0,
+        "yawRateCostWeighted": 0.0,
         "distanceToObstaclesCost": 0.0,
+        "distanceToObstaclesCostWeighted": 0.0,
         "distanceToCenterLinesCost": 0.0,
-        "obstacles": []
+        "distanceToCenterLinesCostWeighted": 0.0,
+        "obstacles": [],
+        "costSum": 0.0,
+        "costSumWeighted": 0.0
     }
 
     scenarioResult["dimension"].append(5.0)
@@ -98,6 +123,50 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
                 markerSerializable["points"].append(pointSerializable)
             mapStructure["markers"].append(markerSerializable)
 
+
+    # calculating the distance to center Lanes
+    for position in scenarioResult["position"]:
+        distances = []
+        for centerLineMarker in mapStructure["markers"]:
+            for point in centerLineMarker["points"]:
+                #calculate Distance between Ego position and centerLinePoint
+                distances.append(calcDistance(position, point))
+        minDistance = min(distances)
+        if type(minDistance) is not float:
+            minDistance = minDistance[0]
+        scenarioResult["distanceToCenterLinesCost"] += minDistance
+
+    scenarioResult["costSum"] = scenarioResult["time"] + \
+        scenarioResult["pathLength"] + \
+        scenarioResult["accelerationCost"] + \
+        scenarioResult["jerkCost"] + \
+        scenarioResult["steeringAngleCost"] + \
+        scenarioResult["steeringRateCost"] + \
+        scenarioResult["yawRateCost"] + \
+        scenarioResult["distanceToCenterLinesCost"] + \
+        scenarioResult["distanceToObstaclesCost"]
+
+    scenarioResult["timeWeighted"] = scenarioResult["time"] * timeWeight
+    scenarioResult["pathLengthWeighted"] = scenarioResult["pathLength"] * pathLengthWeight
+    scenarioResult["accelerationCostWeighted"] = scenarioResult["accelerationCost"] * accelerationWeight
+    scenarioResult["jerkCostWeighted"] = scenarioResult["jerkCost"] * jerkWeight
+    scenarioResult["steeringAngleCostWeighted"] = scenarioResult["steeringAngleCost"] * steeringAngleWeight
+    scenarioResult["steeringRateCostWeighted"] = scenarioResult["steeringRateCost"] * steeringRateWeight
+    scenarioResult["yawRateCostWeighted"] = scenarioResult["yawRateCost"] * yawRateWeight
+    scenarioResult["distanceToCenterLinesCostWeighted"] = scenarioResult["distanceToCenterLinesCost"] * distanceToCenterLinesWeight
+    scenarioResult["distanceToObstaclesCostWeighted"] = scenarioResult["distanceToObstaclesCost"] * distanceToObstaclesWeight
+    
+    scenarioResult["costSumWeighted"] = scenarioResult["timeWeighted"] + \
+        scenarioResult["pathLengthWeighted"] + \
+        scenarioResult["accelerationCostWeighted"] + \
+        scenarioResult["jerkCostWeighted"] + \
+        scenarioResult["steeringAngleCostWeighted"] + \
+        scenarioResult["steeringRateCostWeighted"] + \
+        scenarioResult["yawRateCostWeighted"] + \
+        scenarioResult["distanceToCenterLinesCostWeighted"] + \
+        scenarioResult["distanceToObstaclesCostWeighted"]
+
+    
     # FILE OUTPUT SECTION 
     timestr = time.strftime("%Y%m%d-%H%M%S")
     
