@@ -72,7 +72,7 @@ def sim_run():
     global bSimulationFinished
     global simWaitTimer
     global simWaitLimit
-    rospy.init_node('sim_run', anonymous=True)
+    rospy.init_node('sim_run', anonymous=True, disable_signals=True)
     rate = rospy.Rate(10) # 10hz
     rospy.Subscriber("/current_pose", PoseStamped, poseCallback)
     rospy.Subscriber("/move_base_simple/goal", PoseStamped, goalCallback)
@@ -95,7 +95,7 @@ def sim_run():
     while not rospy.is_shutdown():
         if bSimulationFinished:
             simWaitTimer += 1
-        if bSimulationFinished and simWaitTimer >= simWaitLimit:
+        if bSimulationFinished and len(fileList) > 0 and simWaitTimer >= simWaitLimit:
             topicname = os.popen("rosnode list | grep sim_core").readlines()
             if topicname == ['/sim_core\n']:
                 print("killing simulation")
@@ -107,7 +107,8 @@ def sim_run():
             fileList.pop(0)
             bSimulationFinished = False
             os.system(strCommand)
-            
+        if bSimulationFinished and len(fileList) == 0 :
+            rospy.signal_shutdown("Simulation finished!")
         rate.sleep()
     rospy.spin()
 
