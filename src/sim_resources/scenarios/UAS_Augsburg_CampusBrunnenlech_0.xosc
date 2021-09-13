@@ -243,6 +243,11 @@
                                                                 <WorldPosition x="-139.4486465454" y="185.487365723"  h="3.80"/>
                                                             </Position>
                                                         </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-149.4486465454" y="175.487365723"  h="3.80"/>
+                                                            </Position>
+                                                        </Vertex>
                                                     </Polyline>
                                                 </Shape>
                                             </Trajectory>
@@ -268,7 +273,7 @@
             <ConditionGroup>
               <Condition delay="0.0" conditionEdge="rising" name="Time limit">
                 <ByValueCondition>
-                  <SimulationTimeCondition rule="greaterThan" value="50.0"/>
+                  <SimulationTimeCondition rule="greaterThan" value="60.0"/>
                 </ByValueCondition>
               </Condition>
             </ConditionGroup>

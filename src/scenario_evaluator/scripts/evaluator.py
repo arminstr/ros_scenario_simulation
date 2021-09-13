@@ -73,10 +73,10 @@ def poseCallback(poseS):
     if globalGoal == 0: return
     distance = calcDist(poseS.pose.position.x, poseS.pose.position.y, globalGoal.position.x, globalGoal.position.y)
     if distance < 5.0:
-        simFinished()
+        simFinished(False)
 
-def simFinished():
-    generateReport(state_list, objects_lists, centerLinesMarkerArray, report_path, file_path)
+def simFinished(stopTrigger):
+    generateReport(state_list, objects_lists, centerLinesMarkerArray, report_path, file_path, stopTrigger)
     rospy.signal_shutdown("Evaluation Finsihed")
 
 def velocityCallback(twistS):
@@ -94,8 +94,8 @@ def vehicleCmdCallback(cmd):
     currentSteeringAngle = max_steering_angle_deg * cmd.steer_cmd.steer / 100.0
 
 def endCallback(endState):
-    if endState.data == "StopTrigger":
-        simFinished()
+    if "StopTrigger" in endState.data:
+        simFinished(True)
 
 def objectListCallback(msg):
     global detectedObjectArray

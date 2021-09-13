@@ -18,6 +18,7 @@ zoomOutButton.addEventListener("click", (event) => {
 });
 
 var timeCostTD = document.getElementById("timeCost");
+var stopTriggerCostTD = document.getElementById("stopTriggerCost");
 var pathLengthCostTD = document.getElementById("pathLengthCost");
 var accelerationCostTD = document.getElementById("accelerationCost");
 var jerkCostTD = document.getElementById("jerkCost");
@@ -29,6 +30,7 @@ var dTCenterLineCostTD = document.getElementById("dTCenterLineCost");
 var costSumTD = document.getElementById("costSum");
 
 var timeWeightedCostTD = document.getElementById("timeWeightedCost");
+var stopTriggerWeightedCostTD = document.getElementById("stopTriggerWeightedCost");
 var pathLengthWeightedCostTD = document.getElementById("pathLengthWeightedCost");
 var accelerationWeightedCostTD = document.getElementById("accelerationWeightedCost");
 var jerkWeightedCostTD = document.getElementById("jerkWeightedCost");
@@ -69,6 +71,7 @@ function readScenarioJson(file)
 function fillCostTable(scenario) 
 {
     timeCostTD.innerHTML = (Math.round(scenario["time"] * 100) / 100).toFixed(2);
+    stopTriggerCostTD.innerHTML = (Math.round(scenario["stopTrigger"] * 100) / 100).toFixed(2);
     pathLengthCostTD.innerHTML = (Math.round(scenario["pathLength"] * 100) / 100).toFixed(2);
     accelerationCostTD.innerHTML = (Math.round(scenario["accelerationCost"] * 100) / 100).toFixed(2);
     jerkCostTD.innerHTML = (Math.round(scenario["jerkCost"] * 100) / 100).toFixed(2);
@@ -80,6 +83,7 @@ function fillCostTable(scenario)
     costSumTD.innerHTML = (Math.round(scenario["costSum"] * 100) / 100).toFixed(2);
 
     timeWeightedCostTD.innerHTML = (Math.round(scenario["timeWeighted"] * 100) / 100).toFixed(2);
+    stopTriggerWeightedCostTD.innerHTML = (Math.round(scenario["stopTriggerWeighted"] * 100) / 100).toFixed(2);
     pathLengthWeightedCostTD.innerHTML = (Math.round(scenario["pathLengthWeighted"] * 100) / 100).toFixed(2);
     accelerationWeightedCostTD.innerHTML = (Math.round(scenario["accelerationCostWeighted"] * 100) / 100).toFixed(2);
     jerkWeightedCostTD.innerHTML = (Math.round(scenario["jerkCostWeighted"] * 100) / 100).toFixed(2);

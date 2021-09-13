@@ -10,6 +10,7 @@ additionalObstacleWeight = 0.1
 
 # weights for individual cost metrics
 timeWeight = 1.0
+stopTriggerWeight = 1000.0
 pathLengthWeight = 1.0
 accelerationWeight = 1.0
 jerkWeight = 0.1
@@ -22,7 +23,7 @@ distanceToCenterLinesWeight = 1.0
 def calcDistance(p0, p1):
     return math.sqrt(math.pow(p0[0]-p1[0], 2.0)+math.pow(p0[1]-p1[1], 2.0))
 
-def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path):
+def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path, stopTrigger):
     _, scenarioName = os.path.split(file_path)
     scenarioName, _ = os.path.splitext(scenarioName)
     rospy.loginfo("Starting Report Generation...")
@@ -36,6 +37,8 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         "pathLengthWeighted": 0.0,
         "time": 0.0,
         "timeWeighted": 0.0,
+        "stopTrigger": 0.0,
+        "stopTriggerWeighted": 0.0,
         "dimension": [],
         "timeSteps": [],
         "position": [],
@@ -67,6 +70,11 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
 
     scenarioResult["dimension"].append(5.0)
     scenarioResult["dimension"].append(2.0)
+
+    if stopTrigger:
+        scenarioResult["stopTrigger"] = 1.0
+    else:
+        scenarioResult["stopTrigger"] = 0.0
 
     # iterate trough states and append the information to the dictionary for storage
     for i, state in enumerate(stateList):
@@ -139,6 +147,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         scenarioResult["distanceToCenterLinesCost"] += minDistance
 
     scenarioResult["costSum"] = scenarioResult["time"] + \
+        scenarioResult["stopTrigger"] + \
         scenarioResult["pathLength"] + \
         scenarioResult["accelerationCost"] + \
         scenarioResult["jerkCost"] + \
@@ -149,6 +158,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         scenarioResult["distanceToObstaclesCost"]
 
     scenarioResult["timeWeighted"] = scenarioResult["time"] * timeWeight
+    scenarioResult["stopTriggerWeighted"] = scenarioResult["stopTrigger"] * stopTriggerWeight
     scenarioResult["pathLengthWeighted"] = scenarioResult["pathLength"] * pathLengthWeight
     scenarioResult["accelerationCostWeighted"] = scenarioResult["accelerationCost"] * accelerationWeight
     scenarioResult["jerkCostWeighted"] = scenarioResult["jerkCost"] * jerkWeight
@@ -159,6 +169,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
     scenarioResult["distanceToObstaclesCostWeighted"] = scenarioResult["distanceToObstaclesCost"] * distanceToObstaclesWeight
     
     scenarioResult["costSumWeighted"] = scenarioResult["timeWeighted"] + \
+        scenarioResult["stopTriggerWeighted"] + \
         scenarioResult["pathLengthWeighted"] + \
         scenarioResult["accelerationCostWeighted"] + \
         scenarioResult["jerkCostWeighted"] + \
