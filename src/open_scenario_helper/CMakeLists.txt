@@ -36,11 +36,24 @@ add_library(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/openScenarioHelper.cpp
 )
 
+find_library(XOSC_LIBRARY
+NAMES xosc
+HINTS "${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/build/src/xosc"
+)
+find_library(XOENG_LIBRARY
+NAMES xoeng
+HINTS "${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/build/src/xoeng"
+)
+find_library(XODR_LIBRARY
+NAMES xodr
+HINTS "${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/build/src/xodr"
+)
+
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/build/src/xodr/libxodr.so
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/build/src/xoeng/libxoeng.so
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/build/src/xosc/libxosc.so
+  ${XOSC_LIBRARY}
+  ${XOENG_LIBRARY}
+  ${XODR_LIBRARY}
 )
 
 
