@@ -27,6 +27,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/src/xoeng
   ${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/src/xosc
   ${CMAKE_CURRENT_SOURCE_DIR}/include/ad-xolib/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/pugi
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
