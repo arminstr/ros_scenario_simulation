@@ -141,9 +141,12 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
             for point in centerLineMarker["points"]:
                 #calculate Distance between Ego position and centerLinePoint
                 distances.append(calcDistance(position, point))
-        minDistance = min(distances)
-        if type(minDistance) is not float:
-            minDistance = minDistance[0]
+        if len(distances) > 1:
+            minDistance = min(distances)
+            if type(minDistance) is not float:
+                minDistance = minDistance[0]
+        else:
+            minDistance = 1000.0
         scenarioResult["distanceToCenterLinesCost"] += minDistance
 
     scenarioResult["costSum"] = scenarioResult["time"] + \
