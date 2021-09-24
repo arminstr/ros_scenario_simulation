@@ -1,7 +1,7 @@
 <launch>
 	<arg name="namespace" default="/detection/contour_tracker"/>
-  	<arg name="tracker_input_topic" default="/detection/lidar_detector/objects" />
-  	<arg name="tracker_output_topic" default="/detection/contour_tracker/objects" /> 
+  	<arg name="tracker_input_topic" default="/simulated/objects" />
+  	<arg name="tracker_output_topic" default="/tracked_objects" /> 
   	
   	<arg name="tracking_frame" default="/map" />
 
@@ -30,12 +30,10 @@
 
 	<node pkg="lidar_kf_contour_track" type="lidar_kf_contour_track" name="lidar_kf_contour_track" output="screen">
 
-
-    <remap from="/detection/lidar_detector/objects" to="/simulated/objects" />
-    <remap from="/detection/contour_tracker/objects" to="/tracked_objects" />
-
-    <param name="tracking_frame" value="$(arg tracking_frame)" />
-    <param name="vehicle_width" value="$(arg vehicle_width)" />
+	<param name="tracker_input_topic" value="$(arg tracker_input_topic)" />
+	<param name="tracker_output_topic" value="$(arg tracker_output_topic)" />
+	<param name="tracking_frame" value="$(arg tracking_frame)" />
+    	<param name="vehicle_width" value="$(arg vehicle_width)" />
 	<param name="vehicle_length" value="$(arg vehicle_length)" />		
 	<param name="min_object_size" value="$(arg min_object_size)" />
 	<param name="max_object_size" value="$(arg max_object_size)" />
@@ -64,3 +62,4 @@
         output="screen" ns="$(arg namespace)"/>
 
 </launch>
+
