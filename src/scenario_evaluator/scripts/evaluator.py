@@ -5,7 +5,6 @@ import math
 import numpy as np
 import os
 import pathlib
-import matplotlib.pyplot as plt
 from reportGenerator import generateReport
 from std_msgs.msg import Int32, String
 from geometry_msgs.msg import PoseStamped, TwistStamped
@@ -15,7 +14,6 @@ from commonroad.geometry.shape import Rectangle
 from commonroad.scenario.obstacle import DynamicObstacle, ObstacleType
 from commonroad.scenario.trajectory import Trajectory,State
 from commonroad.prediction.prediction import TrajectoryPrediction
-from commonroad.visualization.draw_dispatch_cr import draw_object
 from vehiclemodels import parameters_vehicle3
 
 from commonroad.common.file_reader import CommonRoadFileReader
