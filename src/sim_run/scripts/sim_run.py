@@ -2,23 +2,9 @@
 # license removed for brevity
 import rospy
 import math
-import numpy as np
 import os
-import pathlib
-import matplotlib.pyplot as plt
 from std_msgs.msg import Int32, String
-from geometry_msgs.msg import PoseStamped, TwistStamped
-from visualization_msgs.msg import MarkerArray
-from autoware_msgs.msg import Waypoint
-from commonroad.geometry.shape import Rectangle
-from commonroad.scenario.obstacle import DynamicObstacle, ObstacleType
-from commonroad.scenario.trajectory import Trajectory,State
-from commonroad.prediction.prediction import TrajectoryPrediction
-from commonroad.visualization.draw_dispatch_cr import draw_object
-from vehiclemodels import parameters_vehicle3
-
-from commonroad.common.file_reader import CommonRoadFileReader
-from commonroad.common.solution import CommonRoadSolutionWriter, Solution, PlanningProblemSolution, VehicleModel, VehicleType, CostFunction
+from geometry_msgs.msg import PoseStamped
 
 
 # generate state list of the ego vehicle's trajectory
