@@ -18,6 +18,7 @@ zoomOutButton.addEventListener("click", (event) => {
 });
 
 var timeCostTD = document.getElementById("timeCost");
+var collisionCostTD = document.getElementById("collisionCost");
 var stopTriggerCostTD = document.getElementById("stopTriggerCost");
 var pathLengthCostTD = document.getElementById("pathLengthCost");
 var accelerationCostTD = document.getElementById("accelerationCost");
@@ -30,6 +31,7 @@ var dTCenterLineCostTD = document.getElementById("dTCenterLineCost");
 var costSumTD = document.getElementById("costSum");
 
 var timeWeightedCostTD = document.getElementById("timeWeightedCost");
+var collisionWeightedCostTD = document.getElementById("collisionWeightedCost");
 var stopTriggerWeightedCostTD = document.getElementById("stopTriggerWeightedCost");
 var pathLengthWeightedCostTD = document.getElementById("pathLengthWeightedCost");
 var accelerationWeightedCostTD = document.getElementById("accelerationWeightedCost");
@@ -71,6 +73,7 @@ function readScenarioJson(file)
 function fillCostTable(scenario) 
 {
     timeCostTD.innerHTML = (Math.round(scenario["time"] * 100) / 100).toFixed(2);
+    collisionCostTD.innerHTML = (Math.round(scenario["collision"] * 100) / 100).toFixed(2);
     stopTriggerCostTD.innerHTML = (Math.round(scenario["stopTrigger"] * 100) / 100).toFixed(2);
     pathLengthCostTD.innerHTML = (Math.round(scenario["pathLength"] * 100) / 100).toFixed(2);
     accelerationCostTD.innerHTML = (Math.round(scenario["accelerationCost"] * 100) / 100).toFixed(2);
@@ -83,6 +86,7 @@ function fillCostTable(scenario)
     costSumTD.innerHTML = (Math.round(scenario["costSum"] * 100) / 100).toFixed(2);
 
     timeWeightedCostTD.innerHTML = (Math.round(scenario["timeWeighted"] * 100) / 100).toFixed(2);
+    collisionWeightedCostTD.innerHTML = (Math.round(scenario["collisionWeighted"] * 100) / 100).toFixed(2);
     stopTriggerWeightedCostTD.innerHTML = (Math.round(scenario["stopTriggerWeighted"] * 100) / 100).toFixed(2);
     pathLengthWeightedCostTD.innerHTML = (Math.round(scenario["pathLengthWeighted"] * 100) / 100).toFixed(2);
     accelerationWeightedCostTD.innerHTML = (Math.round(scenario["accelerationCostWeighted"] * 100) / 100).toFixed(2);
@@ -269,7 +273,7 @@ function drawVideo(scenario, timeStep)
     {
         var obstacleX = scenario["obstacles"][timeStep][i]["position"][0];
         var obstacleY = scenario["obstacles"][timeStep][i]["position"][1];
-        var obstacleYaw = yaw_from_quaternion(scenario["obstacles"][timeStep][i]["orientation"]);
+        var obstacleYaw = scenario["obstacles"][timeStep][i]["orientation"];
         var obstacleLength = scenario["obstacles"][timeStep][i]["dimension"][0];
         var obstacleWidth = scenario["obstacles"][timeStep][i]["dimension"][1];
 
@@ -279,15 +283,6 @@ function drawVideo(scenario, timeStep)
 
     draw_ego_pose(htmlCanvas, ctx, scenario, timeStep, meterToPixelFactor, egoColor, egoLineWidth);
 
-}
-
-function yaw_from_quaternion(quanternionArray)
-{
-    t3 = +2.0 * (quanternionArray[3] * quanternionArray[2] + quanternionArray[0] * quanternionArray[1]);
-    t4 = +1.0 - 2.0 * (quanternionArray[1] * quanternionArray[1] + quanternionArray[2] * quanternionArray[2]);
-    yaw_z = Math.atan2(t3, t4);
-     
-    return yaw_z;
 }
 
 function convert_global_to_vehicle_frame(x, y, egoX, egoY, egoYaw)

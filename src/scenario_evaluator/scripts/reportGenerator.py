@@ -10,6 +10,7 @@ additionalObstacleWeight = 0.1
 
 # weights for individual cost metrics
 timeWeight = 1.0
+collisionWeight = 10000.0
 stopTriggerWeight = 1000.0
 pathLengthWeight = 1.0
 accelerationWeight = 1.0
@@ -22,6 +23,39 @@ distanceToCenterLinesWeight = 1.0
 
 def calcDistance(p0, p1):
     return math.sqrt(math.pow(p0[0]-p1[0], 2.0)+math.pow(p0[1]-p1[1], 2.0))
+    
+# intersection of two polygons from accepted answer of
+# https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
+def checkpolygonIntersection(polygonA, polygonB):
+    polygons = [polygonA, polygonB]
+    for polygon in polygons:
+        for i1, p1 in enumerate(polygon):
+            i2 = (i1 + 1) % len(polygon)
+            p2 = polygon[i2]
+
+            normal = [p2[1] - p1[1], p1[0] - p2[0]]
+            minA = None
+            maxA = None
+            for point in polygonA:
+                projected = normal[0] * point[0] + normal[1] * point[1]
+                if (minA == None or projected < minA):
+                    minA = projected
+                if (maxA == None or projected > maxA):
+                    maxA = projected
+
+            minB = None
+            maxB = None
+            for point in polygonB:
+                projected = normal[0] * point[0] + normal[1] * point[1]
+                if (minB == None or projected < minB):
+                    minB = projected
+                if (maxB == None or projected > maxB):
+                    maxB = projected
+
+            if (maxA < minB or maxB < minA):
+                return False
+    return True
+
 
 def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path, stopTrigger):
     _, scenarioName = os.path.split(file_path)
@@ -37,6 +71,8 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         "pathLengthWeighted": 0.0,
         "time": 0.0,
         "timeWeighted": 0.0,
+        "collision": 0.0,
+        "collisionWeighted": 0.0,
         "stopTrigger": 0.0,
         "stopTriggerWeighted": 0.0,
         "dimension": [],
@@ -119,6 +155,46 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
                 maxDistance = maxDistance[0]
         scenarioResult["distanceToObstaclesCost"] += maxDistance
 
+    # checking for collision
+    for position_index, position in enumerate(scenarioResult["position"]):
+        # delta x and y in length axis
+        ego_dl = [
+            math.cos(scenarioResult["orientation"][position_index])*scenarioResult["dimension"][0]/2, 
+            math.sin(scenarioResult["orientation"][position_index])*scenarioResult["dimension"][0]/2
+            ]
+        # delta x and y in with axis
+        ego_dw = [
+            math.cos(scenarioResult["orientation"][position_index] - math.pi/2)*scenarioResult["dimension"][1]/2, 
+            math.sin(scenarioResult["orientation"][position_index] - math.pi/2)*scenarioResult["dimension"][1]/2
+            ]
+        boundingBoxEgo = [
+            [position[0] + ego_dl[0] + ego_dw[0], position[1] + ego_dl[1] + ego_dw[1]],
+            [position[0] + ego_dl[0] - ego_dw[0], position[1] + ego_dl[1] - ego_dw[1]],
+            [position[0] - ego_dl[0] + ego_dw[0], position[1] - ego_dl[1] + ego_dw[1]],
+            [position[0] - ego_dl[0] - ego_dw[0], position[1] - ego_dl[1] - ego_dw[1]]
+        ]
+
+        for obstacle in scenarioResult["obstacles"][position_index]:
+            # delta x and y in length axis
+            obstacle_dl = [
+                math.cos(obstacle["orientation"])*obstacle["dimension"][0]/2, 
+                math.sin(obstacle["orientation"])*obstacle["dimension"][0]/2
+                ]
+            # delta x and y in with axis
+            obstacle_dw = [
+                math.cos(obstacle["orientation"] - math.pi/2)*obstacle["dimension"][1]/2, 
+                math.sin(obstacle["orientation"] - math.pi/2)*obstacle["dimension"][1]/2
+                ]
+            boundingBoxObstacle = [
+                [obstacle["position"][0] + obstacle_dl[0] + obstacle_dw[0], obstacle["position"][1] + obstacle_dl[1] + obstacle_dw[1]],
+                [obstacle["position"][0] + obstacle_dl[0] - obstacle_dw[0], obstacle["position"][1] + obstacle_dl[1] - obstacle_dw[1]],
+                [obstacle["position"][0] - obstacle_dl[0] + obstacle_dw[0], obstacle["position"][1] - obstacle_dl[1] + obstacle_dw[1]],
+                [obstacle["position"][0] - obstacle_dl[0] - obstacle_dw[0], obstacle["position"][1] - obstacle_dl[1] - obstacle_dw[1]]
+            ]
+            
+            if checkpolygonIntersection(boundingBoxObstacle, boundingBoxEgo):
+                scenarioResult["collision"] = 1.0
+
     mapStructure = {
         "markers": []
     }
@@ -150,6 +226,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         scenarioResult["distanceToCenterLinesCost"] += minDistance
 
     scenarioResult["costSum"] = scenarioResult["time"] + \
+        scenarioResult["collision"] + \
         scenarioResult["stopTrigger"] + \
         scenarioResult["pathLength"] + \
         scenarioResult["accelerationCost"] + \
@@ -161,6 +238,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         scenarioResult["distanceToObstaclesCost"]
 
     scenarioResult["timeWeighted"] = scenarioResult["time"] * timeWeight
+    scenarioResult["collisionWeighted"] = scenarioResult["collision"] * collisionWeight
     scenarioResult["stopTriggerWeighted"] = scenarioResult["stopTrigger"] * stopTriggerWeight
     scenarioResult["pathLengthWeighted"] = scenarioResult["pathLength"] * pathLengthWeight
     scenarioResult["accelerationCostWeighted"] = scenarioResult["accelerationCost"] * accelerationWeight
@@ -172,6 +250,7 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
     scenarioResult["distanceToObstaclesCostWeighted"] = scenarioResult["distanceToObstaclesCost"] * distanceToObstaclesWeight
     
     scenarioResult["costSumWeighted"] = scenarioResult["timeWeighted"] + \
+        scenarioResult["collisionWeighted"] + \
         scenarioResult["stopTriggerWeighted"] + \
         scenarioResult["pathLengthWeighted"] + \
         scenarioResult["accelerationCostWeighted"] + \

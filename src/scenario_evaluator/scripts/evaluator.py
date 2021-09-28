@@ -186,7 +186,7 @@ def evaluator():
                     obj_dict = {
                         "position": [msg_obj.pose.position.x, msg_obj.pose.position.y],
                         "dimension": [msg_obj.dimensions.x, msg_obj.dimensions.y],
-                        "orientation": [msg_obj.pose.orientation.x, msg_obj.pose.orientation.y, msg_obj.pose.orientation.z, msg_obj.pose.orientation.w]
+                        "orientation": yaw_from_quaternion(msg_obj.pose.orientation.x, msg_obj.pose.orientation.y, msg_obj.pose.orientation.z, msg_obj.pose.orientation.w)
                     }
                     objects.append(obj_dict)
                 objects_lists.append(objects)
