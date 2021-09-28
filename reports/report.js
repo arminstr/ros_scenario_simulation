@@ -322,20 +322,20 @@ function draw_ego_pose(canvas, ctx, scenario, timeStep, mTPF, color, lineWidth)
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * ego0[0], centerY + mTPF * ego0[1]);
-    ctx.lineTo(centerX + mTPF * ego1[0], centerY + mTPF * ego1[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * ego0[0]), centerY + mTPF * ego0[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * ego1[0]), centerY + mTPF * ego1[1]);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * ego0[0], centerY + mTPF * ego0[1]);
-    ctx.lineTo(centerX + mTPF * ego2[0], centerY + mTPF * ego2[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * ego0[0]), centerY + mTPF * ego0[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * ego2[0]), centerY + mTPF * ego2[1]);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * ego2[0], centerY + mTPF * ego2[1]);
-    ctx.lineTo(centerX + mTPF * ego3[0], centerY + mTPF * ego3[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * ego2[0]), centerY + mTPF * ego2[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * ego3[0]), centerY + mTPF * ego3[1]);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * ego3[0], centerY + mTPF * ego3[1]);
-    ctx.lineTo(centerX + mTPF * ego1[0], centerY + mTPF * ego1[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * ego3[0]), centerY + mTPF * ego3[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * ego1[0]), centerY + mTPF * ego1[1]);
     ctx.stroke();
 }
 
@@ -361,20 +361,20 @@ function draw_global_pose_in_vehicle_frame(canvas, ctx, scenario, timeStep, mTPF
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * pos0[0], centerY + mTPF * pos0[1]);
-    ctx.lineTo(centerX + mTPF * pos1[0], centerY + mTPF * pos1[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * pos0[0]), centerY + mTPF * pos0[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * pos1[0]), centerY + mTPF * pos1[1]);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * pos0[0], centerY + mTPF * pos0[1]);
-    ctx.lineTo(centerX + mTPF * pos2[0], centerY + mTPF * pos2[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * pos0[0]), centerY + mTPF * pos0[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * pos2[0]), centerY + mTPF * pos2[1]);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * pos2[0], centerY + mTPF * pos2[1]);
-    ctx.lineTo(centerX + mTPF * pos3[0], centerY + mTPF * pos3[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * pos2[0]), centerY + mTPF * pos2[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * pos3[0]), centerY + mTPF * pos3[1]);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(centerX + mTPF * pos3[0], centerY + mTPF * pos3[1]);
-    ctx.lineTo(centerX + mTPF * pos1[0], centerY + mTPF * pos1[1]);
+    ctx.moveTo(canvas.width - (centerX + mTPF * pos3[0]), centerY + mTPF * pos3[1]);
+    ctx.lineTo(canvas.width - (centerX + mTPF * pos1[0]), centerY + mTPF * pos1[1]);
     ctx.stroke();
 }
 
@@ -399,11 +399,11 @@ function draw_map(canvas, ctx, scenario, timeStep, mTPF, lineColor, lineWidth)
             var point = scenario_map["markers"][markers_index]["points"][points_index];
             var p = convert_global_to_vehicle_frame(point[0], point[1], egoX, egoY, egoYaw);
             if( points_index===0 ){
-                ctx.moveTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
+                ctx.moveTo(canvas.width - (centerX + mTPF * p[0]), centerY + mTPF * p[1]);
             }
             else
             {
-                ctx.lineTo(centerX + mTPF * p[0], centerY + mTPF * p[1]);
+                ctx.lineTo(canvas.width - (centerX + mTPF * p[0]), centerY + mTPF * p[1]);
             }
         }
         ctx.stroke();
