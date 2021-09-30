@@ -183,15 +183,14 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
       current_cmd.brake_cmd.brake = 100;
     if(current_cmd.brake_cmd.brake <= 0)
       current_cmd.brake_cmd.brake = 0;
-    if(current_cmd.steer_cmd.steer > 100)
-      current_cmd.steer_cmd.steer = 100;
-    if(current_cmd.steer_cmd.steer <= 0)
-      current_cmd.steer_cmd.steer = 0;
     current_velocity_base_link.twist.linear.x = current_velocity_base_link.twist.linear.x + (max_accel * (double)current_cmd.accel_cmd.accel / 100.0) * dT + (max_brake * (double)current_cmd.brake_cmd.brake / 100.0) * dT;
-
     current_velocity_base_link.twist.linear.y = (current_velocity_base_link.twist.linear.y - lastSpeed) / dT;
     lastSpeed = current_velocity_base_link.twist.linear.y;
     steeringAngle = max_steering_angle * (double)current_cmd.steer_cmd.steer / 100.0;
+    if(steeringAngle > max_steering_angle)
+      steeringAngle = max_steering_angle;
+    if(steeringAngle < -max_steering_angle)
+      steeringAngle = -max_steering_angle;
 
     if (current_velocity_base_link.twist.linear.x < 0.0)
     {
