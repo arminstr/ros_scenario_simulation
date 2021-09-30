@@ -175,6 +175,18 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
     m.getRPY(roll, pitch, yaw);
 
     // add current accel brake and steer values to the base link twist
+    if(current_cmd.accel_cmd.accel > 100)
+      current_cmd.accel_cmd.accel = 100
+    if(current_cmd.accel_cmd.accel <= 0)
+      current_cmd.accel_cmd.accel = 0
+    if(current_cmd.brake_cmd.brake > 100)
+      current_cmd.brake_cmd.brake = 100
+    if(current_cmd.brake_cmd.brake <= 0)
+      current_cmd.brake_cmd.brake = 0
+    if(current_cmd.steer_cmd.steer > 100)
+      current_cmd.steer_cmd.steer = 100
+    if(current_cmd.steer_cmd.steer <= 0)
+      current_cmd.steer_cmd.steer = 0
     current_velocity_base_link.twist.linear.x = current_velocity_base_link.twist.linear.x + (max_accel * (double)current_cmd.accel_cmd.accel / 100.0) * dT + (max_brake * (double)current_cmd.brake_cmd.brake / 100.0) * dT;
 
     current_velocity_base_link.twist.linear.y = (current_velocity_base_link.twist.linear.y - lastSpeed) / dT;
