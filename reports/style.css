@@ -54,7 +54,13 @@ table {
 }
 
 .menuItemDiv {
+    display: block;
+    height: 16px;
     padding: 4px 8px;
+    background-color: lightgray;
+    margin-left: 8px;
+    margin-bottom: 4px;
+    border-radius: 8px;
 }
 
 .menuItemDiv:hover {
@@ -63,7 +69,21 @@ table {
 }
 
 .menuItemLink {
+    float:left; 
+    display:inline; 
     cursor: default;
+    width: 80%;
+}
+
+.menuItemScenarioIndicator {
+    background-color: grey;
+    width: 8px;
+    height: 8px;
+    margin-top: 4px;
+    margin-right: 8px;
+    border-radius: 4px;
+    float: left; 
+    display: inline; 
 }
 
 .menuItemSeparator {

@@ -19,12 +19,19 @@ const scenario = scenarioApi.createScenarioDisplay();
 // });
 fetch("scenarios.json")
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         for (let path_i in data.scenario_json_paths)
         {
-            const item = menuApi.createItem (data.scenario_json_paths[path_i], (m) => {
+            const item = menuApi.createItem (data.scenario_json_paths[path_i], async (m) => {
                 loadScenarioJson(data.scenario_json_paths[path_i]);
             });
+            let fetched_data = await (await fetch(data.scenario_json_paths[path_i])).json();
+            if( fetched_data.collision > 0 || fetched_data.stopTrigger) 
+            {
+                item.indicatorDiv.style.backgroundColor = "red";
+            } else {
+                item.indicatorDiv.style.backgroundColor = "green";
+            }
             menu.addItem(item);
         }
         menu.show("menuDiv");
@@ -41,7 +48,6 @@ function loadScenarioJson(path)
         scenario.fillCostTable();
         scenario.startVideo();
         scenario.drawCharts();
-        
     });
 }
 

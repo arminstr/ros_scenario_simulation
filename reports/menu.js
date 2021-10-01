@@ -127,6 +127,9 @@ function MenuItem (text, callback) {
     this.callback = callback;
     this.itemDiv = document.createElement("div");
     this.itemDiv.classList.add("menuItemDiv");
+    this.indicatorDiv = document.createElement("div");
+    this.indicatorDiv.classList.add("menuItemScenarioIndicator");
+    this.itemDiv.appendChild(this.indicatorDiv);
     this.linkElement = document.createElement("a");
     this.linkElement.classList.add("menuItemLink");
     this.itemDiv.appendChild(this.linkElement);
