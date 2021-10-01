@@ -67,8 +67,6 @@ def sim_run():
 
     file_path = rospy.get_param("/pathToScenario")
     report_path = rospy.get_param("/pathForReport")
-    if os.path.exists(report_path + "/scenario.json"):
-        os.remove(report_path + "/scenario.json")
 
     fileList = []
     for _, _, files in os.walk(file_path):

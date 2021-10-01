@@ -22,3 +22,51 @@ th {
 table {
     border-collapse: collapse;
 }
+
+.closeButton {
+    float: right;
+    content: 'x';
+    background-color: white;
+    border:0px;
+    color: #000;
+    font-size: large;
+    font-weight: 300;
+    font-family: Arial, sans-serif;
+}
+
+.closeButton:hover {
+    background-color: cornflowerblue;
+    border-radius: 8px;
+}
+
+
+.rounded-card {
+    display: box;
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: "Arial", monospace;
+    font-size: small;
+    padding: 12px 8px;
+    z-index: 1000;
+    margin-bottom: 16px;
+}
+
+.menuItemDiv {
+    padding: 4px 8px;
+}
+
+.menuItemDiv:hover {
+    background-color: cornflowerblue;
+    border-radius: 8px;
+}
+
+.menuItemLink {
+    cursor: default;
+}
+
+.menuItemSeparator {
+    border: 0.1px solid grey;
+    margin: 4px;
+}

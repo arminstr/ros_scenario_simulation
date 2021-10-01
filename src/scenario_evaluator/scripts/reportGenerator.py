@@ -280,26 +280,23 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         outfile.write(json_object)
 
     # JSON overview generation
-    json_overview_filename = reportPath + "/scenario.json"
+    json_overview_filename = reportPath + "/scenarios.json"
+    existing_scenario = {
+        "scenario_json_paths": []
+    }
 
-    
+    json_filename = timestr + "-" + scenarioName + ".json"
     if os.path.exists(json_overview_filename):
         f = open(json_overview_filename, "r")
         existing_scenario = json.load(f)
         f.close()
 
-        existing_scenario["scenarios"].append(scenarioName)
         existing_scenario["scenario_json_paths"].append(json_filename)
 
         f = open(json_overview_filename, "w")
         f.write(json.dumps(existing_scenario, indent = 4))
         f.close()
     else:
-        existing_scenario = {
-        "scenarios": [],
-        "scenario_json_paths": []
-        }
-        existing_scenario["scenarios"].append(scenarioName)
         existing_scenario["scenario_json_paths"].append(json_filename)
 
         f = open(json_overview_filename, "w")
