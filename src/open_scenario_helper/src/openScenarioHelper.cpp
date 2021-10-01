@@ -157,6 +157,7 @@ bool openScenarioHelper::Load(const std::string &path, commonroad::CommonRoadDat
                                         state.position.point.x = vertices[q]->m_Position->m_Position->m_WorldPosition->x.m_double + r * dx;
                                         state.position.point.y = vertices[q]->m_Position->m_Position->m_WorldPosition->y.m_double + r * dy;
                                         state.orientation.exact = vertices[q]->m_Position->m_Position->m_WorldPosition->h.m_double + r * dh;
+                                        state.velocity.exact = speed;
                                         temp_obstacle.trajectory.push_back(state);
                                     }
                                 }
