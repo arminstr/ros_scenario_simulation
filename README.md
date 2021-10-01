@@ -30,7 +30,7 @@ pip3 install rospkg numpy matplotlib
 
 ```
 
-get depedencies -> execute in /scenario_sim_ws
+get depedencies -> execute in /ros_scenario_simulation
 
 ```bash
 sudo rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
@@ -46,22 +46,33 @@ git submodule add https://github.com/javedulu/ad-xolib.git src/open_scenario_hel
 - ad-xolib
 Install and build the ad-xolib from source. Additionally, install and build "emscripten" from source. This is needed to build "ad-xolib" or edit the CMakeLists of "ad-xolib" and set emscripten support OFF. At Line 13.
 
-### Build library ad-xolib
+#### Build library ad-xolib
 
-In CMakeLists of ad-xolib set emscrption support to OFF
 
 ```bash
 cd src/open_scenario_helper/include/ad-xolib 
 git submodule update --init --recursive 
 mkdir build
 cd build
-cmake ..
+cmake .. -DBUILD_EMBED_TARGETS=OFF
 make
 ```
 
-### Build ROS Workspace with catkin build
+### Build ROS Workspace 
+
+If it fails, just try again.
+
+```bash
+catkin build
+```
+
+## Run
+
+roslaunch sim_run run.launch 
+
 
 ### References
 [1]: Commonroad Scenario Format Definition https://commonroad.in.tum.de
 
 [2]: OpenSCENARIO  Format Definition https://www.asam.net/standards/detail/openscenario/
+

@@ -189,7 +189,7 @@ autoware_msgs::DetectedObject get_object_from_state(const commonroad::ObstacleIn
   obj.acceleration.linear.y = 0;
   obj.acceleration.linear.z = 0;
 
-  obj.velocity.linear.x = 0;
+  obj.velocity.linear.x = state->velocity.exact;
   obj.velocity.linear.y = 0;
   obj.velocity.linear.z = 0;
 
