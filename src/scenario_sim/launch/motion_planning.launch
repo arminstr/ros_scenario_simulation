@@ -16,7 +16,7 @@
 	<arg name="max_brake_value"				default="100"/> <!-- %100 percentage, min = 0, max = 100 -->
 	
 	<!-- These gains used for steer_mode = 0 -->
-	<arg name="steerAngleGainKP" 			default="1.5"/>
+	<arg name="steerAngleGainKP" 			default="0.75"/>
 	<arg name="steerAngleGainKI" 			default="0.0"/>
 	<arg name="steerAngleGainKD" 			default="0.0"/>
 
