@@ -25,7 +25,7 @@ geometry_msgs::TwistStamped getCurrentVelocityVehicleModel(commonroad::CommonRoa
 void callbackVehicleCommand(const autoware_msgs::VehicleCmd &msg);
 int getStopStateFromScenario(commonroad::CommonRoadData &cR);
 
-double max_accel = 5;   // m / s^2
+double max_accel = 10;   // m / s^2
 double max_brake = -10; // m / s^2
 double max_steering_angle = 60.0 / 180.0 * M_PI;
 autoware_msgs::VehicleCmd current_cmd;
