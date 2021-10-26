@@ -4,6 +4,7 @@ import os
 import errno
 import json
 import math
+from shapely import geometry
 
 # decreasing this factor increases the influence of close obstacles
 additionalObstacleWeight = 0.1 
@@ -27,34 +28,35 @@ def calcDistance(p0, p1):
 # intersection of two polygons from accepted answer of
 # https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
 def checkpolygonIntersection(polygonA, polygonB):
-    polygons = [polygonA, polygonB]
-    for polygon in polygons:
-        for i1, p1 in enumerate(polygon):
-            i2 = (i1 + 1) % len(polygon)
-            p2 = polygon[i2]
+    return geometry.Polygon(polygonA).intersects(geometry.Polygon(polygonB))
+    # polygons = [polygonA, polygonB]
+    # for polygon in polygons:
+    #     for i1, p1 in enumerate(polygon):
+    #         i2 = (i1 + 1) % len(polygon)
+    #         p2 = polygon[i2]
 
-            normal = [p2[1] - p1[1], p1[0] - p2[0]]
-            minA = None
-            maxA = None
-            for point in polygonA:
-                projected = normal[0] * point[0] + normal[1] * point[1]
-                if (minA == None or projected < minA):
-                    minA = projected
-                if (maxA == None or projected > maxA):
-                    maxA = projected
+    #         normal = [p2[1] - p1[1], p1[0] - p2[0]]
+    #         minA = None
+    #         maxA = None
+    #         for point in polygonA:
+    #             projected = normal[0] * point[0] + normal[1] * point[1]
+    #             if (minA == None or projected < minA):
+    #                 minA = projected
+    #             if (maxA == None or projected > maxA):
+    #                 maxA = projected
 
-            minB = None
-            maxB = None
-            for point in polygonB:
-                projected = normal[0] * point[0] + normal[1] * point[1]
-                if (minB == None or projected < minB):
-                    minB = projected
-                if (maxB == None or projected > maxB):
-                    maxB = projected
+    #         minB = None
+    #         maxB = None
+    #         for point in polygonB:
+    #             projected = normal[0] * point[0] + normal[1] * point[1]
+    #             if (minB == None or projected < minB):
+    #                 minB = projected
+    #             if (maxB == None or projected > maxB):
+    #                 maxB = projected
 
-            if (maxA < minB or maxB < minA):
-                return False
-    return True
+    #         if (maxA < minB or maxB < minA):
+    #             return False
+    # return True
 
 
 def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path, stopTrigger):
