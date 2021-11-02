@@ -5,7 +5,7 @@
 	<arg name="steer_mode" 					default="0" /> <!-- steer angle = 0,  steer torque = 1 -->
 	<arg name="drive_mode" 					default="1" /> <!-- linear velocity = 0, pedals stroke = 1 -->
 			
-	<arg name="control_frequency" 			default="10"/> <!-- Hz -->	
+	<arg name="control_frequency" 			default="100"/> <!-- Hz -->	
 	<arg name="min_follow_safe_distance"	default= "20.0"/> <!-- meters, it should be smaller than min follow distance in op_common_params -->
 		
 	<arg name="max_steer_value"				default="12.57"/> <!-- radians -->	

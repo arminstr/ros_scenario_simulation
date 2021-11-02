@@ -6,7 +6,7 @@
   </include>
   
   <!-- Mission Planning -->
-  <arg name="enableStopSignBehavior" 		default="true" />	
+  <arg name="enableStopSignBehavior" 		default="false" />	
   <include file="$(find scenario_sim)/launch/mission_planning.launch">
     <arg name="maxVelocity" 				default="6" /> 
   	<arg name="enableSwerving" 				default="true"  />
@@ -23,7 +23,7 @@
     <arg name="accelGainKI" 				default="2"/>
     <arg name="accelGainKD" 				default="0.0"/>
 	
-    <arg name="brakeGainKP" 				default="5"/>
+    <arg name="brakeGainKP" 				default="10"/>
     <arg name="brakeGainKI" 				default="2.0"/>
     <arg name="brakeGainKD" 				default="0.0"/> 
   </include>
