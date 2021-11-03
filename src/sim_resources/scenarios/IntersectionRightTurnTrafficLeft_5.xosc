@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenSCENARIO.xsd">
+    <FileHeader author="Armin Straller" date="2021-08-24T08:34:00.00" description="avoid obstacle and drive on opposite straight" revMajor="1" revMinor="0"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../map/test_track_v01.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <Vehicle name="ego" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Obstacle 1">
+            <Vehicle name="obstacle" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="3.75" width="2.10"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-17.2" y="-96.7" h="1.57" />
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Obstacle 1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="-49.0" y="0.1" h="0.0" />
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                          <SpeedAction>
+                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0.0"/>
+                            <SpeedActionTarget>
+                              <AbsoluteTargetSpeed value="3.0"/>
+                            </SpeedActionTarget>
+                          </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="DrivingStory">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="owner" parameterType="string" value="Target"/>
+            </ParameterDeclarations>
+            <Act name="EgoDrivingAct">
+                <ManeuverGroup maximumExecutionCount="1" name="EgoDrivingManeuverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ego"/>
+                    </Actors>
+                    <Maneuver name="DrivingManeuver">
+                        <ParameterDeclarations/>
+                        <Event name="DriveEvent" priority="overwrite">
+                            <Action name="DrivingAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <AcquirePositionAction>
+                                            <Position>
+                                                <WorldPosition x="59.8" y="0.9" h="0.0" />
+                                            </Position>
+                                        </AcquirePositionAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition delay="0.0" conditionEdge="rising" name="Simulation Time">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterThan" value="0.0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+            <Act name="ObstacleTrajectoryAct">
+                <ManeuverGroup maximumExecutionCount="1" name="ObstacleTrajectoryGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Obstacle 1"/>
+                    </Actors>
+                    <Maneuver name="TrajectoryManeuver">
+                        <ParameterDeclarations/>
+                        <Event name="DriveEvent" priority="overwrite">
+                            <Action name="TrajectoryAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None />
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <Trajectory closed="false" name="obstacle 1 trajectory">
+                                                <Shape>
+                                                    <Polyline>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="-49.0" y="0.1" h="0.0" />
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition x="82.2" y="0.1" h="0.0" />
+                                                            </Position>
+                                                        </Vertex>
+                                                    </Polyline>
+                                                </Shape>
+                                            </Trajectory>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                      <Condition delay="0.0" conditionEdge="rising" name="Reach Position Trigger">
+                        <ByEntityCondition>
+                            <TriggeringEntities triggeringEntitiesRule="any">
+                                <EntityRef entityRef="Ego"/>
+                            </TriggeringEntities>
+                            <EntityCondition>
+                                <ReachPositionCondition tolerance="30.0">
+                                    <Position>
+                                        <WorldPosition x="-17.0" y="-2.6" h="1.57" />
+                                    </Position>
+                                </ReachPositionCondition>
+                            </EntityCondition>
+                        </ByEntityCondition>
+                      </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+              <Condition delay="0.0" conditionEdge="rising" name="Time limit">
+                <ByValueCondition>
+                  <SimulationTimeCondition rule="greaterThan" value="60.0"/>
+                </ByValueCondition>
+              </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

@@ -160,7 +160,7 @@
                                 <EntityRef entityRef="Ego"/>
                             </TriggeringEntities>
                             <EntityCondition>
-                                <ReachPositionCondition tolerance="6.0">
+                                <ReachPositionCondition tolerance="25.0">
                                     <Position>
                                         <WorldPosition x="-17.0" y="-2.6" h="1.57" />
                                     </Position>
