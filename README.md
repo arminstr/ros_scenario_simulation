@@ -1,6 +1,9 @@
 # ROS Scenario Simulation
 
 This project is designed to test the openplanner algorithms, based on "common road" [1] and "openScenario"[2] files.
+Currently commonroad scenario files are not supported out of the box. 
+The commonroad data structure is used to describe the scenarios. 
+Therefore a commonroad interface should be easy to implement.
 
 ## Scenarios
 Currently the folowing scenarios are provided:
