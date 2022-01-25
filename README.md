@@ -45,13 +45,10 @@ git submodule add https://github.com/javedulu/ad-xolib.git src/open_scenario_hel
 ```
 
 ### Dependencies
-
 - ad-xolib
 Install and build the ad-xolib from source. Additionally, install and build "emscripten" from source. This is needed to build "ad-xolib" or edit the CMakeLists of "ad-xolib" and set emscripten support OFF. At Line 13.
 
 #### Build library ad-xolib
-
-
 ```bash
 cd src/open_scenario_helper/include/ad-xolib 
 git submodule update --init --recursive 
@@ -62,17 +59,23 @@ make
 ```
 
 ### Build ROS Workspace 
-
 If it fails, just try again.
-
 ```bash
 catkin build
 ```
 
 ## Run
-
 roslaunch sim_run run.launch 
 
+## Info
+### Citation
+Citation Elements
+Author: Armin Straller, Mathias Pechinger, Carsten Markgraf Title: ROS Scenario Simulation Publisher: University of Applied Sciences Augsburg Place of publication: Germany Date of publication: 2022 URL: https://github.com/arminstr/ros_scenario_simulation
+
+Bibtex
+```
+@online{2022_ros_scenario_simulation, author = {Armin Straller and Mathias Pechinger and Carsten Markgraf}, title = {Scenario-Based Testing Framework for Path Planning and Control Algorithms in Autonomous Driving}, publisher = {University of Applied Sciences Augsburg}, address = {Germany}, year = {2022}, url = {https://github.com/arminstr/ros_scenario_simulation} }
+```
 
 ### References
 [1]: Commonroad Scenario Format Definition https://commonroad.in.tum.de
