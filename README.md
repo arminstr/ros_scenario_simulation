@@ -74,7 +74,7 @@ Author: Armin Straller, Mathias Pechinger, Carsten Markgraf Title: ROS Scenario 
 
 Bibtex
 ```
-@online{2022_ros_scenario_simulation, author = {Armin Straller and Mathias Pechinger and Carsten Markgraf}, title = {ROS Scenario Simulation}, publisher = {University of Applied Sciences Augsburg}, address = {Germany}, year = {2022}, url = {https://github.com/arminstr/ros_scenario_simulation} }
+@online{2022_ros_scenario_simulation, author = {Armin Straller and Mathias Pechinger and Hatem Darweesh and Carsten Markgraf}, title = {ROS Scenario Simulation}, publisher = {University of Applied Sciences Augsburg}, address = {Germany}, year = {2022}, url = {https://github.com/arminstr/ros_scenario_simulation} }
 ```
 
 ### References
