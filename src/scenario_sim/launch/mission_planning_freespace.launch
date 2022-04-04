@@ -1,0 +1,169 @@
+<launch>
+  
+  
+  <!--##################-->
+  <!-- Open Planner:    -->
+  <!--##################-->
+
+  <!-- OP common params -->
+  <arg name="enableStopSignBehavior" 		default="true" />	
+  <arg name="maxVelocity" 					default="2.0" /> <!-- m/s -->
+  <arg name="enableSwerving" 				default="false"  />
+  <arg name="openDriveMap" 					default=""/>
+
+  <include file="$(find op_local_planner)/launch/op_common_params.launch">
+    <arg name="mapSource" 				default="6" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
+	<arg name="mapFileName" 			default="$(arg openDriveMap)" />
+	
+	<arg name="control_frequency"			default="10"    />
+	<arg name="enableStopSignBehavior" 		default="$(arg enableStopSignBehavior)" />
+	<arg name="lanelet2_origin"				default="0,0,0," /> <!-- GPS origin for lanelet2 map files, Lat, Long, Alt  -->
+		
+	<arg name="pathDensity" 				default="0.5" />
+	<arg name="rollOutDensity" 				default="0.5" />
+	<arg name="rollOutsNumber" 				default="8"    />
+		
+	<arg name="maxLocalPlanDistance" 		default="100" />	
+	<arg name="horizonDistance" 			default="130"  /> <!-- filtering detected object (Radius search)-->
+	
+	<arg name="minFollowingDistance" 		default="100.0"  /> <!-- should be bigger than Distance to follow -->	
+	<arg name="minDistanceToAvoid" 			default="10.0" /> <!-- ONLY IN SWERVING MODE should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
+	<arg name="maxDistanceToAvoid" 			default="0.0"  /> <!-- ONLY IN SWERVING MODE  and used for op_follower should be smaller than minDistanceToAvoid -->
+	<arg name="speedProfileFactor"			default="1.0"  /> <!-- curvature response to velocity. Low = slow . 1 means average (percentage value)-->
+	
+	<arg name="smoothingDataWeight"			default="0.25"  /> <!-- map correction (global and local trajecotry) 0 to 0.5 high = ignore data smooth as much as possible-->
+	<arg name="smoothingSmoothWeight"		default="0.2"  /> <!-- higher value inceases smoothing of the path 0 to 0.5-->	
+
+	<arg name="accelerationPushRatio" 		default="1.0" /> <!-- push the velocity to increase even when the velocity feedback signal from sensing is very small or delayed, contribute to final acceleration. where 1 predefined acceleration value is used --> 
+	<arg name="brakingPushRatio" 			default="1.1" /> <!-- push the velocity to decrease even when the velocity feedback signal from sensing is very small or delayed, contribute to final deceleration. where 1 predefined deceleration value is used -->
+	
+	
+	<arg name="horizontalSafetyDistance"	default="0.2"  />
+	<arg name="verticalSafetyDistance"		default="1.2"  />
+	
+	<arg name="enableSwerving" 				default="$(arg enableSwerving)"  />
+	<arg name="enableFollowing" 			default="true" />	
+	<arg name="enableTrafficLightBehavior" 	default="true" />
+	<arg name="enableLaneChange" 			default="false" />	
+	
+	<!-- Vehicle Info, shared with controller and simulation -->
+	<arg name="height" 						default="1.429"  />
+	<arg name="front_length"				default="0.6"  />
+	<arg name="back_length"					default="1.0"  />
+	<arg name="width" 						default="1.81"  />
+	<arg name="length" 						default="4.4"  />	
+	<arg name="wheelBaseLength" 			default="2.8"  />
+	<arg name="turningRadius"				default="7.2"  />
+	<arg name="maxWheelAngle" 				default="0.7" /> <!-- radians -->
+	<arg name="steeringDelay" 				default="0" /> <!-- time steering wheel take to turn from zero to max left or right -->
+	<arg name="minPursuiteDistance" 		default="3.0" /> <!-- min distance to forward following target point on the trajectory  -->
+	<arg name="maxAcceleration" 			default="1.5" /> <!-- m/s*s -->
+	<arg name="maxDeceleration" 			default="-1.5" /> <!-- m/s*s -->
+	<arg name="maxVelocity" 				default="$(arg maxVelocity)" /> <!-- m/s -->
+	<arg name="minVelocity" 				default="0.1" /> <!-- m/s | Never set to 0.0, mind motion predictor--> 
+
+	<!-- Internal ACC parameters -->
+	<arg name="use_internal_acc" 			default="true" />
+	<arg name="curveSlowDownRatio" 			default="1.0" />	
+	<!-- ................................................... -->
+
+	
+	<arg name="additionalBrakingDistance" 	default="0.0"  />
+	<arg name="goalDiscoveryDistance" 		default="4.0"  />
+	
+	<arg name="giveUpDistance" 				default="-1.0"  /> <!-- Margin of error for the stopline - allow braking after to stopline -> can't go further than -4 -->
+			
+	<arg name="velocitySource"				default="1" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info, 3- vehicle status ) "" -->
+	<arg name="vel_odom_topic"				default="/carla/ego_vehicle/odometry" />
+	<arg name="vel_curr_topic"				default="/current_velocity" />
+	<arg name="vel_can_topic"				default="/can_info" />
+	<arg name="vehicle_status_topic"		default="/vehicle_status" />
+			
+	<arg name="experimentName" 				default="decision_maker" />		
+	
+	<arg name="objects_input_topic" 		default="/tracked_objects" />
+
+  </include>
+
+  <!-- Trajectory Evaluation Specific Parameters -->
+  <include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch">
+
+	
+	<arg name="enablePrediction" default="true" />	 				 		
+	<arg name="keepCurrentTrajectory" default="true" />
+
+	<arg name="weight_priority" 	default="0.2"/>
+	<arg name="weight_transition" 	default="0.2"/>
+	<arg name="weight_longitudinal" default="0.2"/>
+	<arg name="weight_lateral" 		default="0.2"/>
+	<arg name="weight_lane_change" 	default="0.2"/>
+	
+	<arg name="collision_time" 	default="5"/>
+  </include>
+
+
+  <!-- Motion Predictor Specific Parameters -->
+  <include file="$(find op_local_planner)/launch/op_motion_predictor.launch">
+	<arg name="max_distance_to_lane" 	default="3"/> <!-- should be around 1.5 for a 3 meter lane -->
+	<arg name="min_prediction_distance" default="1.0"/> <!-- in meters -->
+	<arg name="min_prediction_time" 	default="6"/> <!-- in seconds -->
+	<arg name="enableGenrateBranches" 	default="false"/>
+	<arg name="enableCurbObstacles" 	default="false" />
+	<arg name="distanceBetweenCurbs" 	default="3" />
+	<arg name="visualizationTime" 		default="0.05" />
+	<arg name="enableStepByStepSignal" 	default="false" />
+	<arg name="enableParticleFilterPrediction" 	default="false" />
+	
+	<!-- all weights sum must equal 1 -->
+	<!-- ............................ -->
+	<arg name="pose_weight_factor" 	default="0.2" />
+	<arg name="dir_weight_factor" 	default="0.2" />
+	<arg name="vel_weight_factor" 	default="0.2" />
+	<arg name="acc_weight_factor" 	default="0.2" />
+	<arg name="ind_weight_factor" 	default="0.2" />
+	<!-- ............................ -->
+	
+	<arg name="particles_number" 	default="25" />	
+	<arg name="min_particles_num" 	default="2" />
+	<arg name="keep_percentage" 	default="0.5" />
+  </include>
+  
+  <!-- <include file="$(find freespace_trajectory_generator)/launch/freespace_trajectory_generator.launch">
+  </include> -->
+
+  <!-- Behavior Selector Specific Parameters -->
+  <include file="$(find op_local_planner)/launch/op_behavior_selector.launch">
+	<arg name="evidence_trust_number" 	default="3"/>
+	<arg name="use_sim_time" 	default="false"/>
+	<arg name="show_driving_path" 	default="true"/>	
+  </include>
+
+    <!-- Global Planner Specific Parameters -->
+
+  <arg name="pathDensity" 					default="0.5" /> <!-- distance between each two waypoints-->
+  <arg name="enableSmoothing" 				default="true" /> <!-- 1 or 0 -->
+  <arg name="enableLaneChange" 				default="false" /> <!-- 1 or 0 -->
+  <arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
+  <arg name="enableReplan"    				default="false" /> <!-- 1 or 0 -->	
+  <arg name="velocitySource"					default="1" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info) "" -->
+  <arg name="mapSource" 						default="6" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
+  <arg name="enableDynamicMapUpdate" 			default="false" />	
+  <arg name="node_start_delay" default="0.0" />  
+	
+  <node pkg="op_global_planner" type="op_global_planner" name="op_global_planner" output="screen" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@'">
+		
+    <param name="pathDensity" 				value="$(arg pathDensity)" />
+	<param name="enableSmoothing" 			value="$(arg enableSmoothing)" />
+	<param name="enableLaneChange" 			value="$(arg enableLaneChange)" />
+	<param name="enableRvizInput" 			value="$(arg enableRvizInput)" />
+	<param name="enableReplan" 				value="$(arg enableReplan)" />				
+	<param name="velocitySource" 			value="$(arg velocitySource)" />
+	<param name="mapSource" 				value="$(arg mapSource)" />
+	<param name="mapFileName" 			value="$(arg openDriveMap)" />
+	
+	<param name="enableDynamicMapUpdate" 	value="$(arg enableDynamicMapUpdate)" />
+			    
+  </node> 
+	
+
+</launch>

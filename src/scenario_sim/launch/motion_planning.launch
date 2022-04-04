@@ -1,108 +1,87 @@
 <!-- -->
 <launch>
-	<arg name="enableSimulationMode" 		default="2" /> <!-- No Simulation = 0, Simulation Mode = 1, Direct Control = 2 -->
-	
-	<arg name="steer_mode" 					default="0" /> <!-- steer angle = 0,  steer torque = 1 -->
-	<arg name="drive_mode" 					default="1" /> <!-- linear velocity = 0, pedals stroke = 1 -->
-			
-	<arg name="control_frequency" 			default="10"/> <!-- Hz -->	
-	<arg name="min_follow_safe_distance"	default= "20.0"/> <!-- meters, it should be smaller than min follow distance in op_common_params -->
-		
-	<arg name="max_steer_value"				default="12.57"/> <!-- radians -->	
-	<arg name="max_steer_torque"			default="100"/> <!-- %100 percentage, min = 0, max = 100 -->
-	<arg name="min_steer_torque"			default="-100"/> <!-- %100 percentage, min = 0, max = -100 -->
-	
-	<arg name="max_accel_value"				default="100"/> <!-- %100 percentage, min = 0, max = 100 -->
-	<arg name="max_brake_value"				default="100"/> <!-- %100 percentage, min = 0, max = 100 -->
-	
-	<!-- These gains used for steer_mode = 0 -->
-	<arg name="steerAngleGainKP" 			default="0.75"/>
-	<arg name="steerAngleGainKI" 			default="0.0"/>
-	<arg name="steerAngleGainKD" 			default="0.0"/>
 
-	<!-- Next two parameters are used for ACC tuning, will only be used when drive_mode param above is set to (0) which means velocity mode -->
-	<!-- If use_internal_acc parameter in op_common_params is set to "true", these values will be ignored and trajectory assigned value will be used directly as target velocity -->
-	<arg name="accelerationPushRatio" 		default="1.0" /> 
-	<arg name="brakingPushRatio" 			default="1.0" /> <!-- push the velocity to decrease even when the velocity feedback signal from sensing is very small or delayed, contribute to final deceleration. where 1 predefined deceleration value is used -->
-	
-	<!-- These gains used for steer_mode = 1 -->
-	<arg name="steerTorqueGainKP" 			default="30.0"/>
-	<arg name="steerTorqueGainKI" 			default="10.0"/>
-	<arg name="steerTorqueGainKD" 			default="10.0"/>
-	
-    <arg name="accelGainKP" 				default="1"/>
-    <arg name="accelGainKI" 				default="1"/>
-    <arg name="accelGainKD" 				default="0.0"/>
-	
-    <arg name="brakeGainKP" 				default="45.0"/>
-    <arg name="brakeGainKI" 				default="24.0"/>
-    <arg name="brakeGainKD" 				default="0.0"/> 		 
-	
-	<arg name="accelInitDelay" 				default="0.4"/> <!-- seconds -->
-	<arg name="accelAvgDelay" 				default="0.1"/> <!-- seconds -->
-	<arg name="avgAcceleration"				default="1.5"/> <!-- m/s2 -->
-	
-	<arg name="avg_engine_brake_accel"		default="-1.0"/> <!-- m/s2 -->
+	<!--
+	# mpc_follower #
+	Follow a list of waypoints
+	In:  /mpc_waypoints [autoware_msgs::Lane]
+	In:  /current_pose [geometry_msgs::PoseStamped]
+	In:  /estimate_twist [geometry_msgs::TwistStamped]
+	In:  /vehicle_status [autoware_msgs::VehicleStatus]
+	Out: /ctrl_raw [autoware_msgs::ControlCommandStamped]
+	Out: /twist_raw [geometry_msgs::TwistStamped]-->
+	<!-- <include file='$(find mpc_follower)/launch/mpc_follower.launch'>  -->
 
-	<arg name="brakeInitDelay" 				default="0.2"/> <!-- seconds -->
-	<arg name="brakeAvgDelay" 				default="0.05"/> <!-- seconds -->
-	<arg name="avgDeceleration"				default="-3.5"/> <!-- m/s2 -->
-	
-	<!-- used only when enableSimulationMode = true --> 		
-	<arg name="pose_topic" 					default="sim_pose"/>
-  	<arg name="localizer_pose_topic" 		default="sim_localizer_pose"/>
-  	<arg name="velocity_topic" 				default="sim_velocity"/>
-  	<arg name="vehicle_status_topic" 		default="vehicle_status"/>
+	<arg name="publish_debug_values" default="true"/>
+	<arg name="show_debug_info" default="true" doc="flag to display debug info" />
 
-	<arg name="node_start_delay" default="1.0" />  
+	<arg name="ctrl_period" default="0.03" doc="control period [s]"/>
+	<arg name="traj_resample_dist" default="0.1" doc="ath resampling interval [m]"/>
+	<arg name="enable_yaw_recalculation" default="true" doc="flag for recalculation of yaw angle after resampling"/>
+	<arg name="admisible_position_error" default="8.0" doc="stop mpc calculation when error is larger than the following value"/>
+	<arg name="admisible_yaw_error_deg" default="90.0" doc="stop mpc calculation when error is larger than the following value"/>
+	<arg name="enable_path_smoothing" default="false" doc="flag for path smoothing"/>
+	<arg name="path_smoothing_times" default="1" doc="number of times of applying path smoothing filter"/>
+	<arg name="path_filter_moving_ave_num" default="25" doc="param of moving average filter for path smoothing "/>
+	<arg name="curvature_smoothing_num" default="25" doc="point-to-point index distance used in curvature calculation : curvature is calculated from three points p(i-num), p(i), p(i+num)"/>
+	<arg name="steering_lpf_cutoff_hz" default="3.0" doc="cutoff frequency of lowpass filter for steering command [Hz]"/>
+	<arg name="qp_solver_type" default="unconstraint_fast" doc="optimization solver type. option is unconstraint_fast, unconstraint, and qpoases_hotstart"/>
+	<arg name="vehicle_model_type" default="dynamics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
 
-	<node name="op_waypoint_follower" pkg="op_waypoint_follower" type="op_waypoint_follower" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
-	<!-- <node pkg="op_waypoint_follower" type="op_waypoint_follower" name="op_waypoint_follower" output="screen"> -->
-	
-		<param name="steer_mode" 				value="$(arg steer_mode)" />
-		<param name="drive_mode" 				value="$(arg drive_mode)" />
-				
-		<param name="control_frequency" 		value="$(arg control_frequency)" />		
-		<param name="min_follow_safe_distance" 	value="$(arg min_follow_safe_distance)" />			
-		
-		<param name="max_steer_value" 			value="$(arg max_steer_value)" />		
-		<param name="max_accel_value" 			value="$(arg max_accel_value)" />
-		<param name="max_brake_value" 			value="$(arg max_brake_value)" />
-				
-		<param name="steerAngleGainKP" 			value="$(arg steerAngleGainKP)" />
-		<param name="steerAngleGainKI" 			value="$(arg steerAngleGainKI)" />
-		<param name="steerAngleGainKD" 			value="$(arg steerAngleGainKD)" />
-				
-		<param name="steerTorqueGainKP" 		value="$(arg steerTorqueGainKP)" />
-		<param name="steerTorqueGainKI" 		value="$(arg steerTorqueGainKI)" />
-		<param name="steerTorqueGainKD" 		value="$(arg steerTorqueGainKD)" />
-		
-		<param name="accelGainKP" 				value="$(arg accelGainKP)" />
-		<param name="accelGainKI" 				value="$(arg accelGainKI)" />		
-		<param name="accelGainKD" 				value="$(arg accelGainKD)" />
-		
-		<param name="brakeGainKP" 				value="$(arg brakeGainKP)" />
-		<param name="brakeGainKI" 				value="$(arg brakeGainKI)" />
-		<param name="brakeGainKD" 				value="$(arg brakeGainKD)" />
-				
-		<param name="accelInitDelay" 			value="$(arg accelInitDelay)" />
-		<param name="accelAvgDelay" 			value="$(arg accelAvgDelay)" />
-		<param name="avgAcceleration" 			value="$(arg avgAcceleration)" />
-		
-		<param name="avg_engine_brake_accel" 	value="$(arg avg_engine_brake_accel)" />
-		<param name="brakeInitDelay" 			value="$(arg brakeInitDelay)" />
-		<param name="brakeAvgDelay" 			value="$(arg brakeAvgDelay)" />
-		<param name="avgDeceleration" 			value="$(arg avgDeceleration)" />
-		
-		<param name="accelerationPushRatio" 	value="$(arg accelerationPushRatio)" />
-		<param name="brakingPushRatio" 			value="$(arg brakingPushRatio)" />
-		
-		<param name="enableSimulationMode" 		value="$(arg enableSimulationMode)" />		
-		<param name="pose_topic" 				value="$(arg pose_topic)" />
-		<param name="localizer_pose_topic" 		value="$(arg localizer_pose_topic)" />
-		<param name="velocity_topic" 			value="$(arg velocity_topic)" />
-		<param name="vehicle_status_topic" 		value="$(arg vehicle_status_topic)" />
-		
+	<arg name="mpc_prediction_horizon" default="110" doc="prediction horizon step"/>
+	<arg name="mpc_prediction_sampling_time" default="0.07" doc="prediction horizon period [s]"/>
+	<arg name="mpc_weight_lat_error" default="0.17" doc="lateral error weight in matrix Q"/>
+	<arg name="mpc_weight_heading_error" default="0.17" doc="heading error weight in matrix Q"/>
+	<arg name="mpc_weight_heading_error_squared_vel_coeff" default="0.25" doc="heading error * velocity weight in matrix Q"/>
+	<arg name="mpc_weight_steering_input" default="1.0" doc="steering error weight in matrix R"/>
+	<arg name="mpc_weight_steering_input_squared_vel_coeff" default="0.25" doc="steering error * velocity weight in matrix R"/>
+	<arg name="mpc_weight_lat_jerk" default="0.25" doc="lateral jerk weight in matrix R"/>
+	<arg name="mpc_weight_terminal_lat_error" default="13.0" doc="terminal lateral error weight in matrix Q to improve mpc stability"/>
+	<arg name="mpc_weight_terminal_heading_error" default="14.0" doc="terminal heading error weight in matrix Q to improve mpc stability"/>
+	<arg name="mpc_zero_ff_steer_deg" default="2.0" doc="threshold that feed-forward angle becomes zero"/>
+	<arg name="vehicle_model_steer_tau" default="0.2" doc="steering dynamics time constant (1d approzimation) [s]"/>
+	<arg name="vehicle_model_wheelbase" default="2.7" doc="wheel base length [m]"/>
+	<arg name="steer_lim_deg" default="30.0" doc="steering angle limit [deg]"/>
+	<arg name="steering_gear_ratio" default="20.0" doc="steering gear ratio"/>
+	<node pkg="mpc_follower" type="mpc_follower" name="mpc_follower" output="screen">
+		<!-- system -->
+		<param name="publish_debug_values" value="$(arg publish_debug_values)"/>
+		<param name="ctrl_cmd_interface" value="all"/>
+		<param name="in_waypoints_name" value="/op_local_selected_trajectory"/>
+		<param name="in_vehicle_status_name" value="/vehicle_status"/>
+		<param name="in_selfpose_name" value="/current_pose"/>
+		<param name="out_twist_name" value="/twist_raw"/>
+		<param name="out_vehicle_cmd_name" value="/ctrl_cmd"/>
+
+		<!-- paramters -->
+		<param name="ctrl_period" value="$(arg ctrl_period)"/>
+		<param name="traj_resample_dist" value="$(arg traj_resample_dist)"/>
+		<param name="admisible_position_error" value="$(arg admisible_position_error)"/>
+		<param name="admisible_yaw_error_deg" value="$(arg admisible_yaw_error_deg)"/>
+		<param name="path_smoothing_times" value="$(arg path_smoothing_times)"/>
+		<param name="show_debug_info" value="$(arg show_debug_info)"/>
+		<param name="enable_yaw_recalculation" value="$(arg enable_yaw_recalculation)"/>
+		<param name="enable_path_smoothing" value="$(arg enable_path_smoothing)"/>
+		<param name="path_filter_moving_ave_num" value="$(arg path_filter_moving_ave_num)"/>
+		<param name="curvature_smoothing_num" value="$(arg curvature_smoothing_num)"/>
+		<param name="steering_lpf_cutoff_hz" value="$(arg steering_lpf_cutoff_hz)"/>
+		<param name="qp_solver_type" value="$(arg qp_solver_type)"/>
+		<param name="vehicle_model_type" value="$(arg vehicle_model_type)"/>
+		<param name="mpc_prediction_horizon" value="$(arg mpc_prediction_horizon)"/>
+		<param name="mpc_prediction_sampling_time" value="$(arg mpc_prediction_sampling_time)"/>
+		<param name="mpc_weight_lat_error" value="$(arg mpc_weight_lat_error)"/>
+		<param name="mpc_weight_heading_error" value="$(arg mpc_weight_heading_error)"/>
+		<param name="mpc_weight_heading_error_squared_vel_coeff" value="$(arg mpc_weight_heading_error_squared_vel_coeff)"/>
+		<param name="mpc_weight_steering_input" value="$(arg mpc_weight_steering_input)"/>
+		<param name="mpc_weight_steering_input_squared_vel_coeff" value="$(arg mpc_weight_steering_input_squared_vel_coeff)"/>
+		<param name="mpc_weight_lat_jerk" value="$(arg mpc_weight_lat_jerk)"/>
+		<param name="mpc_weight_terminal_lat_error" value="$(arg mpc_weight_terminal_lat_error)"/>
+		<param name="mpc_weight_terminal_heading_error" value="$(arg mpc_weight_terminal_heading_error)"/>
+		<param name="mpc_zero_ff_steer_deg" value="$(arg mpc_zero_ff_steer_deg)"/>
+		<param name="vehicle_model_steer_tau" value="$(arg vehicle_model_steer_tau)"/>
+		<param name="vehicle_model_wheelbase" value="$(arg vehicle_model_wheelbase)"/>
+		<param name="steer_lim_deg" value="$(arg steer_lim_deg)"/>
+		<param name="steering_gear_ratio" value="$(arg steering_gear_ratio)"/>
 	</node>
 
 </launch>

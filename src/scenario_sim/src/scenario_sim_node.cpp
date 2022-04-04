@@ -4,11 +4,13 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <ros/ros.h>
 #include "autoware_msgs/VehicleCmd.h"
+#include "autoware_msgs/VehicleStatus.h"
 #include <tf/tf.h>
 
 #include <cmath>
@@ -25,9 +27,13 @@ geometry_msgs::TwistStamped getCurrentVelocityVehicleModel(commonroad::CommonRoa
 void callbackVehicleCommand(const autoware_msgs::VehicleCmd &msg);
 int getStopStateFromScenario(commonroad::CommonRoadData &cR);
 
-double max_accel = 10;   // m / s^2
-double max_brake = -10; // m / s^2
-double max_steering_angle = 60.0 / 180.0 * M_PI;
+double max_accel = 10;   // m / s²
+double max_decel = -10; // m / s²
+double max_accel_jerk = 10;  // m / s³
+double max_decel_jerk = -5;  // m / s³
+double max_steering_angle = (30.0 / 180.0) * M_PI; // rad
+double max_steering_angle_vel = (600.0 / 180.0) * M_PI; // rad / s
+double max_steering_angle_accel = (60.0 / 180.0) * M_PI; // rad / s²
 autoware_msgs::VehicleCmd current_cmd;
 geometry_msgs::PoseStamped current_pose;
 geometry_msgs::TwistStamped current_velocity_base_link;
@@ -41,6 +47,7 @@ double steeringAngleRate = 0.0;
 double vehicleLength = 2.8;
 
 double lastSpeed = 0.0;
+double last_accel = 0.0;
 
 int maxTimeSteps = 600;
 
@@ -52,6 +59,8 @@ int main(int argc, char **argv)
   ros::Publisher current_pose_pub = n.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
   ros::Publisher current_velocity_pub = n.advertise<geometry_msgs::TwistStamped>("/current_velocity", 10);
   ros::Publisher current_timestep_pub = n.advertise<std_msgs::Int32>("/sim_timestep", 10);
+  ros::Publisher current_steer_pub = n.advertise<std_msgs::Float32>("/current_steering_angle", 10);
+  ros::Publisher current_vehicle_status_pub = n.advertise<autoware_msgs::VehicleStatus>("/vehicle_status", 10);
 
   ros::Publisher current_pose_marker_pub = n.advertise<visualization_msgs::Marker>("/sim_visu/current_pose_marker", 10);
   ros::Publisher end_state_pub = n.advertise<std_msgs::String>("/sim/end_state", 10);
@@ -98,9 +107,18 @@ int main(int argc, char **argv)
     timeMsg.data = timeCounter;
     current_timestep_pub.publish(timeMsg);
 
+    std_msgs::Float32 steerMsg;
+    steerMsg.data = (float)steeringAngle / M_PI * 180.0;
+    current_steer_pub.publish(steerMsg);
+
     visualization_msgs::Marker currentPoseMarker;
     currentPoseMarker = getMarkerFromStampedPose(current_pose);
     current_pose_marker_pub.publish(currentPoseMarker);
+
+    autoware_msgs::VehicleStatus currentVehicleStatus;
+    currentVehicleStatus.angle = steerMsg.data;
+    currentVehicleStatus.speed = current_velocity_base_link.twist.linear.x * 3.6;
+    current_vehicle_status_pub.publish(currentVehicleStatus);
 
     if (timeCounter > endTimeStep)
     {
@@ -183,10 +201,39 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
       current_cmd.brake_cmd.brake = 100;
     if(current_cmd.brake_cmd.brake <= 0)
       current_cmd.brake_cmd.brake = 0;
-    current_velocity_base_link.twist.linear.x = current_velocity_base_link.twist.linear.x + (max_accel * (double)current_cmd.accel_cmd.accel / 100.0) * dT + (max_brake * (double)current_cmd.brake_cmd.brake / 100.0) * dT;
+    
+    double acceleration = (max_accel * (double)current_cmd.accel_cmd.accel / 100.0) + (max_decel * (double)current_cmd.brake_cmd.brake / 100.0);
+    if(acceleration > max_accel) {
+      acceleration = max_accel;
+    }
+    if(acceleration < max_decel) {
+      acceleration = max_decel;
+    }
+    if(acceleration - last_accel > max_accel_jerk * dT) {
+      acceleration = last_accel + max_accel_jerk * dT;
+    }
+    if(acceleration - last_accel < max_decel_jerk * dT) {
+      acceleration = last_accel + max_decel_jerk * dT;
+    }
+    current_velocity_base_link.twist.linear.x = current_velocity_base_link.twist.linear.x + acceleration * dT;
     current_velocity_base_link.twist.linear.y = (current_velocity_base_link.twist.linear.y - lastSpeed) / dT;
     lastSpeed = current_velocity_base_link.twist.linear.y;
-    steeringAngle = max_steering_angle * (double)current_cmd.steer_cmd.steer / 100.0;
+    last_accel = acceleration;
+
+    double accel_steer = (max_steering_angle_accel * (double)current_cmd.steer_cmd.steer / 100.0);
+    if(accel_steer > max_steering_angle_accel) {
+      acceleration = max_accel;
+    }
+    if(accel_steer < -max_steering_angle_accel) {
+      acceleration = max_accel;
+    }
+    steeringAngleRate = steeringAngleRate + accel_steer * dT;
+    if(abs(steeringAngleRate) > max_steering_angle) {
+      steeringAngleRate = max_steering_angle;
+    }
+      
+    steeringAngle = steeringAngle + (max_steering_angle_vel * (double)current_cmd.steer_cmd.steer / 100.0) * dT;
+
     if(steeringAngle > max_steering_angle)
       steeringAngle = max_steering_angle;
     if(steeringAngle < -max_steering_angle)

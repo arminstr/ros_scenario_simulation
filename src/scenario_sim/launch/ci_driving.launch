@@ -7,8 +7,8 @@
   
   <!-- Mission Planning -->
   <arg name="enableStopSignBehavior" 		default="true" />	
-  <include file="$(find scenario_sim)/launch/mission_planning.launch">
-    <arg name="maxVelocity" 				default="6" /> 
+  <include file="$(find scenario_sim)/launch/mission_planning_freespace.launch">
+    <arg name="maxVelocity" 				default="13.89" /> 
   	<arg name="enableSwerving" 				default="true"  />
     <arg name="enableStopSignBehavior" 		default="$(arg enableStopSignBehavior)" />
     <arg name="openDriveMap" 					value="$(arg opendriveFilePath)" />
@@ -16,8 +16,9 @@
 
   <!-- Motion Planning -->
   <include file="$(find scenario_sim)/launch/motion_planning.launch">
-    <arg name="steerAngleGainKP" 			default="3.0"/>
+    <!-- <arg name="steerAngleGainKP" 			default="0.3"/>
     <arg name="steerAngleGainKI" 			default="0.0"/>
+    <arg name="steerAngleGainKD" 			default="0.25"/>
 
     <arg name="accelGainKP" 				default="20"/>
     <arg name="accelGainKI" 				default="2"/>
@@ -25,7 +26,7 @@
 	
     <arg name="brakeGainKP" 				default="5"/>
     <arg name="brakeGainKI" 				default="2.0"/>
-    <arg name="brakeGainKD" 				default="0.0"/> 
+    <arg name="brakeGainKD" 				default="0.0"/>  -->
   </include>
 
   <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find scenario_sim)/config/op_viz.rviz" /> -->

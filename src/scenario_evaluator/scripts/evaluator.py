@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pathlib
 from reportGenerator import generateReport
-from std_msgs.msg import Int32, String
+from std_msgs.msg import Int32, String, Float32
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from autoware_msgs.msg import VehicleCmd, DetectedObjectArray
 from visualization_msgs.msg import MarkerArray
@@ -88,8 +88,12 @@ def timeCallback(timeStep):
     currentTimeStep = int(timeStep.data)
 
 def vehicleCmdCallback(cmd):
+    pass
+
+def steeringAngleCallback(msg):
     global currentSteeringAngle
-    currentSteeringAngle = max_steering_angle_deg * cmd.steer_cmd.steer / 100.0
+    currentSteeringAngle = msg.data
+
 
 def endCallback(endState):
     if "StopTrigger" in endState.data:
@@ -167,6 +171,7 @@ def evaluator():
     rospy.Subscriber("/sim_timestep", Int32, timeCallback)
     rospy.Subscriber("/move_base_simple/goal", PoseStamped, goalCallback)
     rospy.Subscriber("/op_controller_cmd", VehicleCmd, vehicleCmdCallback)
+    rospy.Subscriber("/current_steering_angle", Float32, steeringAngleCallback)
     rospy.Subscriber("/sim/end_state", String, endCallback)
     rospy.Subscriber("/simulated/objects", DetectedObjectArray, objectListCallback)
     rospy.Subscriber("/vector_map_center_lines_rviz", MarkerArray, centerLinesCallback)

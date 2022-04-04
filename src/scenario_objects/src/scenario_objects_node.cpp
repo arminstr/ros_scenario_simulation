@@ -23,7 +23,7 @@ geometry_msgs::Point32 rotate_point(float cx,float cy,float angle,geometry_msgs:
 autoware_msgs::DetectedObject get_object_from_state(const commonroad::ObstacleInformation* obstacle, commonroad::ObstacleState* state, int id);
 void callbackCurrentPose(const geometry_msgs::PoseStamped &msg);
 
-double noiseMargin = 0.1; // 0.1 Meters max
+double noiseMargin = 0.0; // 0.1 Meters max
 geometry_msgs::PoseStamped current_pose;
 
 int main( int argc, char** argv )

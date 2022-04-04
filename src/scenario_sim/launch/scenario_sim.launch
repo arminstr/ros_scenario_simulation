@@ -1,6 +1,6 @@
 <launch>
     <arg name="pathToScenario"/>
-    <arg name="pathToOpenDrive" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/map/test_track_v01.xodr"/>
+    <arg name="pathToOpenDrive" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/map/MCubeTestMap.xodr"/>
     <arg name="pathForReport"/>
   
 
@@ -25,6 +25,14 @@
     <include file="$(find scenario_goal)/launch/scenario_goal.launch"/>
 
     <node pkg="tf_broadcaster" type="tf_broadcaster_node" name="tf_broadcaster" />
+
+    <!-- ROS-Nodes for freespace generation -->
+    <include file="$(find path_to_freespace_converter)/launch/path_to_freespace_converter.launch">
+    </include>
+    <include file="$(find freespace_visualizer)/launch/freespace_visualizer.launch">
+    </include>
+    <include file="$(find freespace_goal)/launch/freespace_goal.launch">
+    </include>
 
 
     <include file="$(find scenario_sim)/launch/ci_driving.launch">
