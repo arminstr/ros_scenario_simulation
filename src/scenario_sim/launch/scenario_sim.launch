@@ -1,12 +1,27 @@
 <launch>
+    <arg name="accelGainKP" default="8.0"/>
+    <arg name="accelGainKI" default="0.5"/>
+    <arg name="accelGainKD" default="0.0"/>
+
+    <arg name="steerGainKP" default="8.0"/>
+    <arg name="steerGainKI" default="0.0"/>
+    <arg name="steerGainKD" default="7.0"/>
+
     <arg name="pathToScenario"/>
     <arg name="pathToOpenDrive" default="$(env HOME)/ros_scenario_simulation/src/sim_resources/map/MCubeTestMap.xodr"/>
-    <arg name="pathForReport"/>
-  
+    <arg name="pathForReport"/>  
 
     <param name="pathForReport" value="$(arg pathForReport)"/>
     <param name="pathToScenario" value="$(arg pathToScenario)"/>
     <param name="pathToOpenDrive" value="$(arg pathToOpenDrive)"/>
+
+    <param name="accelGainKP" value="$(arg accelGainKP)"/>
+    <param name="accelGainKI" value="$(arg accelGainKI)"/>
+    <param name="accelGainKD" value="$(arg accelGainKD)"/>
+
+    <param name="steerGainKP" value="$(arg steerGainKP)"/>
+    <param name="steerGainKI" value="$(arg steerGainKI)"/>
+    <param name="steerGainKD" value="$(arg steerGainKD)"/>
     
     <!-- topic interface -->
     <include file="$(find scenario_evaluator)/launch/evaluator.launch">

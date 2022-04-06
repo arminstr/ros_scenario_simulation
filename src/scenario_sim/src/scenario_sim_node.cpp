@@ -10,6 +10,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <ros/ros.h>
 #include "autoware_msgs/VehicleCmd.h"
+#include "autoware_msgs/ControlCommandStamped.h"
 #include "autoware_msgs/VehicleStatus.h"
 #include <tf/tf.h>
 
@@ -24,7 +25,7 @@ geometry_msgs::PoseStamped getCurrentPoseVehicleModel(commonroad::CommonRoadData
 visualization_msgs::Marker getMarkerFromStampedPose(geometry_msgs::PoseStamped gP);
 void modelStep(commonroad::CommonRoadData &cR, int timeStep);
 geometry_msgs::TwistStamped getCurrentVelocityVehicleModel(commonroad::CommonRoadData &cR, geometry_msgs::PoseStamped cP, geometry_msgs::PoseStamped lP, int timeStep);
-void callbackVehicleCommand(const autoware_msgs::VehicleCmd &msg);
+void callbackControlCommand(const autoware_msgs::ControlCommandStamped &msg);
 int getStopStateFromScenario(commonroad::CommonRoadData &cR);
 
 double max_accel = 10;   // m / s²
@@ -34,7 +35,7 @@ double max_decel_jerk = -5;  // m / s³
 double max_steering_angle = (30.0 / 180.0) * M_PI; // rad
 double max_steering_angle_vel = (600.0 / 180.0) * M_PI; // rad / s
 double max_steering_angle_accel = (60.0 / 180.0) * M_PI; // rad / s²
-autoware_msgs::VehicleCmd current_cmd;
+autoware_msgs::ControlCommandStamped current_cmd;
 geometry_msgs::PoseStamped current_pose;
 geometry_msgs::TwistStamped current_velocity_base_link;
 geometry_msgs::TwistStamped current_velocity_world;
@@ -51,6 +52,18 @@ double last_accel = 0.0;
 
 int maxTimeSteps = 600;
 
+double accelGainKP = 0.0;
+double accelGainKI = 0.0;
+double accelGainKD = 0.0;
+
+double steerGainKP = 0.0;
+double steerGainKI = 0.0;
+double steerGainKD = 0.0;
+
+double preAccelE = 0.0;
+double preSteerE = 0.0;
+double accelI = 0.0;
+double steerI = 0.0;
 
 int main(int argc, char **argv)
 {
@@ -64,7 +77,7 @@ int main(int argc, char **argv)
 
   ros::Publisher current_pose_marker_pub = n.advertise<visualization_msgs::Marker>("/sim_visu/current_pose_marker", 10);
   ros::Publisher end_state_pub = n.advertise<std_msgs::String>("/sim/end_state", 10);
-  ros::Subscriber sub_vehicle_cmd = n.subscribe("/op_controller_cmd", 10, callbackVehicleCommand);
+  ros::Subscriber sub_vehicle_cmd = n.subscribe("/ctrl_cmd", 10, callbackControlCommand);
   ros::Rate r(1 / dT);
 
   // create commonroad data structure
@@ -91,6 +104,14 @@ int main(int argc, char **argv)
     exit(0);
   }
 
+  n.getParam("/accelGainKP", accelGainKP);
+  n.getParam("/accelGainKI", accelGainKI);
+  n.getParam("/accelGainKD", accelGainKD);
+
+  n.getParam("/steerGainKP", steerGainKP);
+  n.getParam("/steerGainKI", steerGainKI);
+  n.getParam("/steerGainKD", steerGainKD);
+
   int timeCounter = -50;
   geometry_msgs::PoseStamped lastPose;
 
@@ -116,7 +137,7 @@ int main(int argc, char **argv)
     current_pose_marker_pub.publish(currentPoseMarker);
 
     autoware_msgs::VehicleStatus currentVehicleStatus;
-    currentVehicleStatus.angle = steerMsg.data;
+    currentVehicleStatus.angle = steeringAngle;
     currentVehicleStatus.speed = current_velocity_base_link.twist.linear.x * 3.6;
     current_vehicle_status_pub.publish(currentVehicleStatus);
 
@@ -134,7 +155,7 @@ int main(int argc, char **argv)
   }
 }
 
-void callbackVehicleCommand(const autoware_msgs::VehicleCmd &msg)
+void callbackControlCommand(const autoware_msgs::ControlCommandStamped &msg)
 {
   current_cmd = msg;
 }
@@ -193,16 +214,22 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
     m.getRPY(roll, pitch, yaw);
 
     // add current accel brake and steer values to the base link twist
-    if(current_cmd.accel_cmd.accel > 100)
-      current_cmd.accel_cmd.accel = 100;
-    if(current_cmd.accel_cmd.accel <= 0)
-      current_cmd.accel_cmd.accel = 0;
-    if(current_cmd.brake_cmd.brake > 100)
-      current_cmd.brake_cmd.brake = 100;
-    if(current_cmd.brake_cmd.brake <= 0)
-      current_cmd.brake_cmd.brake = 0;
-    
-    double acceleration = (max_accel * (double)current_cmd.accel_cmd.accel / 100.0) + (max_decel * (double)current_cmd.brake_cmd.brake / 100.0);
+
+    double accelE = current_cmd.cmd.linear_velocity - current_velocity_base_link.twist.linear.x;
+    double accelP = accelE;
+    accelI = accelI + accelE * dT;
+    double accelD = (accelE - preAccelE) / dT;
+    double commandAccel = accelGainKP * accelP + accelGainKI * accelI + accelGainKD * accelD;
+    preAccelE = accelE;
+
+    double steerE = current_cmd.cmd.steering_angle - steeringAngle;
+    double steerP = steerE;
+    steerI = steerI + steerE * dT;
+    double steerD = (steerE - preSteerE) / dT;
+    double commandSteer = steerGainKP * steerP + steerGainKI * steerI + steerGainKD * steerD;
+    preSteerE = steerE;
+ 
+    double acceleration = commandAccel;
     if(acceleration > max_accel) {
       acceleration = max_accel;
     }
@@ -220,19 +247,16 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
     lastSpeed = current_velocity_base_link.twist.linear.y;
     last_accel = acceleration;
 
-    double accel_steer = (max_steering_angle_accel * (double)current_cmd.steer_cmd.steer / 100.0);
-    if(accel_steer > max_steering_angle_accel) {
-      acceleration = max_accel;
-    }
-    if(accel_steer < -max_steering_angle_accel) {
-      acceleration = max_accel;
-    }
+    double accel_steer = commandSteer;
     steeringAngleRate = steeringAngleRate + accel_steer * dT;
-    if(abs(steeringAngleRate) > max_steering_angle) {
-      steeringAngleRate = max_steering_angle;
+    if(steeringAngleRate > max_steering_angle_vel) {
+      steeringAngleRate = max_steering_angle_vel;
+    }
+    if(steeringAngleRate < -max_steering_angle_vel) {
+      steeringAngleRate = -max_steering_angle_vel;
     }
       
-    steeringAngle = steeringAngle + (max_steering_angle_vel * (double)current_cmd.steer_cmd.steer / 100.0) * dT;
+    steeringAngle = steeringAngle + steeringAngleRate * dT;
 
     if(steeringAngle > max_steering_angle)
       steeringAngle = max_steering_angle;

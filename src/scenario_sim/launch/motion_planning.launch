@@ -13,40 +13,43 @@
 	<!-- <include file='$(find mpc_follower)/launch/mpc_follower.launch'>  -->
 
 	<arg name="publish_debug_values" default="true"/>
-	<arg name="show_debug_info" default="true" doc="flag to display debug info" />
+	<arg name="show_debug_info" default="false" doc="flag to display debug info" />
 
-	<arg name="ctrl_period" default="0.03" doc="control period [s]"/>
+	<arg name="ctrl_period" default="0.05" doc="control period [s]"/>
 	<arg name="traj_resample_dist" default="0.1" doc="ath resampling interval [m]"/>
 	<arg name="enable_yaw_recalculation" default="true" doc="flag for recalculation of yaw angle after resampling"/>
-	<arg name="admisible_position_error" default="8.0" doc="stop mpc calculation when error is larger than the following value"/>
-	<arg name="admisible_yaw_error_deg" default="90.0" doc="stop mpc calculation when error is larger than the following value"/>
-	<arg name="enable_path_smoothing" default="false" doc="flag for path smoothing"/>
-	<arg name="path_smoothing_times" default="1" doc="number of times of applying path smoothing filter"/>
+	<arg name="admisible_position_error" default="2.0" doc="stop mpc calculation when error is larger than the following value"/>
+	<arg name="admisible_yaw_error_deg" default="30.0" doc="stop mpc calculation when error is larger than the following value"/>
+	<arg name="enable_path_smoothing" default="true" doc="flag for path smoothing"/>
+	<arg name="path_smoothing_times" default="2" doc="number of times of applying path smoothing filter"/>
 	<arg name="path_filter_moving_ave_num" default="25" doc="param of moving average filter for path smoothing "/>
 	<arg name="curvature_smoothing_num" default="25" doc="point-to-point index distance used in curvature calculation : curvature is calculated from three points p(i-num), p(i), p(i+num)"/>
-	<arg name="steering_lpf_cutoff_hz" default="3.0" doc="cutoff frequency of lowpass filter for steering command [Hz]"/>
-	<arg name="qp_solver_type" default="unconstraint_fast" doc="optimization solver type. option is unconstraint_fast, unconstraint, and qpoases_hotstart"/>
-	<arg name="vehicle_model_type" default="dynamics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
+	<arg name="steering_lpf_cutoff_hz" default="1.0" doc="cutoff frequency of lowpass filter for steering command [Hz]"/>
+	<arg name="qp_solver_type" default="unconstraint" doc="optimization solver type. option is unconstraint_fast, unconstraint, and qpoases_hotstart"/>
+	<arg name="vehicle_model_type" default="kinematics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
 
-	<arg name="mpc_prediction_horizon" default="110" doc="prediction horizon step"/>
-	<arg name="mpc_prediction_sampling_time" default="0.07" doc="prediction horizon period [s]"/>
-	<arg name="mpc_weight_lat_error" default="0.17" doc="lateral error weight in matrix Q"/>
-	<arg name="mpc_weight_heading_error" default="0.17" doc="heading error weight in matrix Q"/>
-	<arg name="mpc_weight_heading_error_squared_vel_coeff" default="0.25" doc="heading error * velocity weight in matrix Q"/>
+	<arg name="mpc_prediction_horizon" default="100" doc="prediction horizon step"/>
+	<arg name="mpc_prediction_sampling_time" default="0.05" doc="prediction horizon period [s]"/>
+
 	<arg name="mpc_weight_steering_input" default="1.0" doc="steering error weight in matrix R"/>
-	<arg name="mpc_weight_steering_input_squared_vel_coeff" default="0.25" doc="steering error * velocity weight in matrix R"/>
-	<arg name="mpc_weight_lat_jerk" default="0.25" doc="lateral jerk weight in matrix R"/>
-	<arg name="mpc_weight_terminal_lat_error" default="13.0" doc="terminal lateral error weight in matrix Q to improve mpc stability"/>
-	<arg name="mpc_weight_terminal_heading_error" default="14.0" doc="terminal heading error weight in matrix Q to improve mpc stability"/>
-	<arg name="mpc_zero_ff_steer_deg" default="2.0" doc="threshold that feed-forward angle becomes zero"/>
-	<arg name="vehicle_model_steer_tau" default="0.2" doc="steering dynamics time constant (1d approzimation) [s]"/>
-	<arg name="vehicle_model_wheelbase" default="2.7" doc="wheel base length [m]"/>
+	<arg name="mpc_weight_lat_error" default="0.25" doc="lateral error weight in matrix Q"/>
+	
+	<arg name="mpc_weight_heading_error" default="0.0" doc="heading error weight in matrix Q"/>
+	<arg name="mpc_weight_heading_error_squared_vel_coeff" default="0.1" doc="heading error * velocity weight in matrix Q"/>
+	<arg name="mpc_weight_steering_input_squared_vel_coeff" default="0.1" doc="steering error * velocity weight in matrix R"/>
+	<arg name="mpc_weight_lat_jerk" default="0.0" doc="lateral jerk weight in matrix R"/>
+	<arg name="mpc_weight_terminal_lat_error" default="0.0" doc="terminal lateral error weight in matrix Q to improve mpc stability"/>
+	<arg name="mpc_weight_terminal_heading_error" default="0.0" doc="terminal heading error weight in matrix Q to improve mpc stability"/>
+	<arg name="mpc_zero_ff_steer_deg" default="0.0" doc="threshold that feed-forward angle becomes zero"/>
+	
+	<arg name="vehicle_model_steer_tau" default="0.1" doc="steering dynamics time constant (1d approzimation) [s]"/>
+	<arg name="vehicle_model_wheelbase" default="2.8" doc="wheel base length [m]"/>
 	<arg name="steer_lim_deg" default="30.0" doc="steering angle limit [deg]"/>
-	<arg name="steering_gear_ratio" default="20.0" doc="steering gear ratio"/>
+	<arg name="steering_gear_ratio" default="1.0" doc="steering gear ratio"/>
 	<node pkg="mpc_follower" type="mpc_follower" name="mpc_follower" output="screen">
 		<!-- system -->
 		<param name="publish_debug_values" value="$(arg publish_debug_values)"/>
-		<param name="ctrl_cmd_interface" value="all"/>
+		<param name="ctrl_cmd_interface" value="ctrl_raw"/>
 		<param name="in_waypoints_name" value="/op_local_selected_trajectory"/>
 		<param name="in_vehicle_status_name" value="/vehicle_status"/>
 		<param name="in_selfpose_name" value="/current_pose"/>
@@ -83,5 +86,18 @@
 		<param name="steer_lim_deg" value="$(arg steer_lim_deg)"/>
 		<param name="steering_gear_ratio" value="$(arg steering_gear_ratio)"/>
 	</node>
+
+	<!-- Twist filter  -->
+	<!-- <include file="$(find twist_filter)/launch/twist_filter.launch">
+		<arg name="wheel_base" default="2.8" />
+		<arg name="lateral_accel_limit" default="1.5" />
+		<arg name="lateral_jerk_limit" default="1.0" />
+		<arg name="lowpass_gain_linear_x" default="0.0" />
+		<arg name="lowpass_gain_angular_z" default="0.0" />
+		<arg name="lowpass_gain_steering_angle" default="0.0" />
+		<arg name="enable_smoothing" default="true" />
+		<arg name="enable_debug" default="false" />
+		<arg name="use_decision_maker" default="false" />
+	</include> -->
 
 </launch>
