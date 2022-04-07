@@ -7,7 +7,7 @@ import os
 import pathlib
 from reportGenerator import generateReport
 from std_msgs.msg import Int32, String, Float32
-from geometry_msgs.msg import PoseStamped, TwistStamped
+from geometry_msgs.msg import PoseStamped, TwistStamped, Polygon
 from autoware_msgs.msg import VehicleCmd, DetectedObjectArray
 from visualization_msgs.msg import MarkerArray
 from commonroad.geometry.shape import Rectangle
@@ -25,6 +25,7 @@ max_steering_angle_deg = 60.0
 # generate state list of the ego vehicle's trajectory
 state_list = []
 objects_lists = []
+freespace_list = []
 file_path = ''
 report_path = ''
 
@@ -38,7 +39,7 @@ currentSteeringAngle = 0.0
 globalGoal = 0
 detectedObjectArray = 0
 centerLinesMarkerArray = 0
-
+freespacePolygon = 0
 
 def yaw_from_quaternion(x, y, z, w):
         """
@@ -74,7 +75,7 @@ def poseCallback(poseS):
         simFinished(False)
 
 def simFinished(stopTrigger):
-    generateReport(state_list, objects_lists, centerLinesMarkerArray, report_path, file_path, stopTrigger)
+    generateReport(state_list, objects_lists, centerLinesMarkerArray, report_path, file_path, stopTrigger, freespace_list)
     rospy.signal_shutdown("Evaluation Finsihed")
 
 def velocityCallback(twistS):
@@ -106,6 +107,10 @@ def objectListCallback(msg):
 def centerLinesCallback(msg):
     global centerLinesMarkerArray
     centerLinesMarkerArray = msg
+
+def freespaceCallback(msg):
+    global freespacePolygon
+    freespacePolygon = msg
 
 def finish():
     global state_list
@@ -175,6 +180,7 @@ def evaluator():
     rospy.Subscriber("/sim/end_state", String, endCallback)
     rospy.Subscriber("/simulated/objects", DetectedObjectArray, objectListCallback)
     rospy.Subscriber("/vector_map_center_lines_rviz", MarkerArray, centerLinesCallback)
+    rospy.Subscriber("/map_freespace", Polygon, freespaceCallback)
 
     file_path = rospy.get_param("/pathToScenario")
     report_path = rospy.get_param("/pathForReport")
@@ -195,6 +201,7 @@ def evaluator():
                     }
                     objects.append(obj_dict)
                 objects_lists.append(objects)
+                freespace_list.append(freespacePolygon)
 
             lastTimeStep = currentTimeStep
         

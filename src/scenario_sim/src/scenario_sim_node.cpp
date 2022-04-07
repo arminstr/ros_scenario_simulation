@@ -219,18 +219,6 @@ void modelStep(commonroad::CommonRoadData &cR, int timeStep)
     current_velocity_base_link.twist.linear.y = (current_velocity_base_link.twist.linear.y - lastSpeed) / dT;
     lastSpeed = current_velocity_base_link.twist.linear.y;
     last_accel = acceleration;
-
-    double accel_steer = (max_steering_angle_accel * (double)current_cmd.steer_cmd.steer / 100.0);
-    if(accel_steer > max_steering_angle_accel) {
-      acceleration = max_accel;
-    }
-    if(accel_steer < -max_steering_angle_accel) {
-      acceleration = max_accel;
-    }
-    steeringAngleRate = steeringAngleRate + accel_steer * dT;
-    if(abs(steeringAngleRate) > max_steering_angle) {
-      steeringAngleRate = max_steering_angle;
-    }
       
     steeringAngle = steeringAngle + (max_steering_angle_vel * (double)current_cmd.steer_cmd.steer / 100.0) * dT;
 

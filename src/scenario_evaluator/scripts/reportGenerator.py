@@ -59,7 +59,7 @@ def checkpolygonIntersection(polygonA, polygonB):
     # return True
 
 
-def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path, stopTrigger):
+def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, file_path, stopTrigger, freespaceList):
     _, scenarioName = os.path.split(file_path)
     scenarioName, _ = os.path.splitext(scenarioName)
     rospy.loginfo("Starting Report Generation...")
@@ -103,7 +103,8 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
         "distanceToCenterLinesCostWeighted": 0.0,
         "obstacles": [],
         "costSum": 0.0,
-        "costSumWeighted": 0.0
+        "costSumWeighted": 0.0,
+        "freespace": []
     }
 
     scenarioResult["dimension"].append(5.0)
@@ -143,6 +144,14 @@ def generateReport(stateList, objectsLists, centerLinesMarkerArray, reportPath, 
     # apped the objects in the object list
     for object_list in objectsLists:
         scenarioResult["obstacles"].append(object_list)
+
+    # apped the freespace Polygons to the freespace list
+    for freespace in freespaceList:
+        p = []
+        points = freespace.points
+        for point in points:
+            p.append((point.x, point.y))
+        scenarioResult["freespace"].append(p)
 
     # calculating the distance to obstacles cost
     for position_index, position in enumerate(scenarioResult["position"]):
