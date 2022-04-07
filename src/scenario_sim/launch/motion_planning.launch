@@ -32,14 +32,14 @@
 	<arg name="mpc_prediction_sampling_time" default="0.05" doc="prediction horizon period [s]"/>
 
 	<arg name="mpc_weight_steering_input" default="1.0" doc="steering error weight in matrix R"/>
-	<arg name="mpc_weight_lat_error" default="0.25" doc="lateral error weight in matrix Q"/>
+	<arg name="mpc_weight_lat_error" default="0.4" doc="lateral error weight in matrix Q"/>
 	
 	<arg name="mpc_weight_heading_error" default="0.0" doc="heading error weight in matrix Q"/>
-	<arg name="mpc_weight_heading_error_squared_vel_coeff" default="0.1" doc="heading error * velocity weight in matrix Q"/>
-	<arg name="mpc_weight_steering_input_squared_vel_coeff" default="0.1" doc="steering error * velocity weight in matrix R"/>
+	<arg name="mpc_weight_heading_error_squared_vel_coeff" default="0.15" doc="heading error * velocity weight in matrix Q"/>
+	<arg name="mpc_weight_steering_input_squared_vel_coeff" default="0.15" doc="steering error * velocity weight in matrix R"/>
 	<arg name="mpc_weight_lat_jerk" default="0.0" doc="lateral jerk weight in matrix R"/>
-	<arg name="mpc_weight_terminal_lat_error" default="0.0" doc="terminal lateral error weight in matrix Q to improve mpc stability"/>
-	<arg name="mpc_weight_terminal_heading_error" default="0.0" doc="terminal heading error weight in matrix Q to improve mpc stability"/>
+	<arg name="mpc_weight_terminal_lat_error" default="0.1" doc="terminal lateral error weight in matrix Q to improve mpc stability"/>
+	<arg name="mpc_weight_terminal_heading_error" default="0.1" doc="terminal heading error weight in matrix Q to improve mpc stability"/>
 	<arg name="mpc_zero_ff_steer_deg" default="0.0" doc="threshold that feed-forward angle becomes zero"/>
 	
 	<arg name="vehicle_model_steer_tau" default="0.1" doc="steering dynamics time constant (1d approzimation) [s]"/>
